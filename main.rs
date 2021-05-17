@@ -1,4 +1,13 @@
+#![allow(unused_imports)]
+#![allow(dead_code)]
+
+mod vm;
+use vm::*;
+
 fn main()
 {
-    println!("Hello world!");
+    let _x = vm::Instr::Push;
+
+
+
 }
