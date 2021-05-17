@@ -1,5 +1,22 @@
+/*
+TODO: need some kind of Value struct/type
+- 32-bit payload for integers?
+- Way to tag and untag pointers, integers, etc.
+
+If we align objects to 16-byte boundaries, we can spare up to 4 bits for tags.
+
+Basic types, kinds of values:
+- Nil (should probably be all zeros, evaluate to false)
+- True/false (special pointers?)
+- Int32
+- Float32
+- Object
+- Function
+- Array
+- Resource handle
+*/
+
 // Opcode enumeration
-#[allow(dead_code)]
 pub enum Instr
 {
     // Local variable access
@@ -7,16 +24,16 @@ pub enum Instr
     SetLocal { idx: u32 },
 
     // Stack manipulation
-    Push,
+    Push { val: u64 },
     Pop,
     Dup,
     Swap,
 
-    /*
     // 32-bit integer operations
-    I32_ADD,
-    I32_SUB,
-    I32_MUL,
+    I32Add,
+    I32Sub,
+    I32Mul,
+    /*
     I32_DIV,
     I32_MOD,
     I32_SHL,
@@ -55,11 +72,12 @@ pub enum Instr
 
     // Object operations
     NEW_OBJECT,
-    OBJ_FIELD_LIST
-    OBJ_HAS,
+    OBJ_KEYS,
+    OBJ_DEF_CONST,
     OBJ_SET,
     OBJ_GET,
     OBJ_GET_IMM,
+    OBJ_HAS,
 
     // Array operations
     NEW_ARRAY,
@@ -68,15 +86,13 @@ pub enum Instr
     ARRAY_POP,
     ARRAY_GET,
     ARRAY_SET,
+    */
 
     // Branch instructions
-    JUMP,
-    IF_TRUE,
-    IF_FALSE,
-    CALL,
-    RET,
-    THROW
-    */
+    Jump { target: u32 },
+    IfTrue { target: u32 },
+    IfFalse { target: u32 },
+    Call,
+    Ret,
+    //Throw,
 }
-
-// TODO: make instructions be fixed-width structs?

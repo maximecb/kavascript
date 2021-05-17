@@ -1,8 +1,42 @@
+use std::fs::File;
+use std::io;
+use std::io::Read;
+
+struct Input
+{
+    // Input string to be parsed
+    input_str: String,
+
+    // Input source name
+    src_name: String,
+
+    // Current position in the input string
+    pos: u32,
+
+    // Current line number
+    line_no: u32,
+
+    // Current column number
+    col_no : u32,
+}
+
+impl Input
+{
+    fn new(input_str: String, src_name: String) -> Self
+    {
+        Input {
+            input_str: input_str,
+            src_name: src_name,
+            pos: 0,
+            line_no: 0,
+            col_no: 0
+        }
+    }
 
 
 
 
-
+}
 
 
 
@@ -14,19 +48,19 @@ struct Input
 {
 private:
 
-    /// Input source name
+    // Input source name
     std::string srcName;
 
-    /// Input string to be parsed
+    // Input string to be parsed
     std::string inStr;
 
-    /// Current index in the input string
+    // Current index in the input string
     size_t strIdx;
 
-    /// Current line number
+    // Current line number
     size_t lineNo;
 
-    /// Current column number
+    // Current column number
     size_t colNo;
 
 public:
@@ -35,35 +69,35 @@ public:
 
     ~Input();
 
-    /// Peek at a character from the input
+    // Peek at a character from the input
     char peekCh();
 
-    /// Read/consume a character from the input
+    // Read/consume a character from the input
     char readCh();
 
-    /// Test if the end of file has been reached
+    // Test if the end of file has been reached
     bool eof();
 
-    /// Check if a string is next in the input
+    // Check if a string is next in the input
     bool next(const std::string& str);
 
-    /// Try and match a given string in the input
-    /// The string is consumed if matched
+    // Try and match a given string in the input
+    // The string is consumed if matched
     bool match(const std::string& str);
 
-    /// Fail if the input doesn't match a given string
+    // Fail if the input doesn't match a given string
     void expect(const std::string str);
 
-    /// Consume whitespace and comments
+    // Consume whitespace and comments
     void eatWS();
 
-    /// Version of next which also eats preceding whitespace
+    // Version of next which also eats preceding whitespace
     bool nextWS(const std::string& str);
 
-    /// Version of match which also eats preceding whitespace
+    // Version of match which also eats preceding whitespace
     bool matchWS(const std::string& str);
 
-    /// Version of expect which eats preceding whitespace
+    // Version of expect which eats preceding whitespace
     void expectWS(const std::string str);
 
     std::string getSrcName() const { return srcName; }
@@ -108,25 +142,25 @@ public:
 // Operator information structure
 struct OpInfo
 {
-    /// Operator string (e.g. "+")
+    // Operator string (e.g. "+")
     std::string str;
 
-    /// Closing string (optional)
+    // Closing string (optional)
     std::string closeStr;
 
-    /// Operator arity
+    // Operator arity
     int arity;
 
-    /// Precedence level
+    // Precedence level
     int prec;
 
-    /// Associativity, left-to-right or right-to-left ('l' or 'r')
+    // Associativity, left-to-right or right-to-left ('l' or 'r')
     char assoc;
 
-    /// Non-associative flag (e.g.: - and / are not associative)
+    // Non-associative flag (e.g.: - and / are not associative)
     bool nonAssoc;
 
-    /// Flag indicating a binary operator can be folded into an assignment
+    // Flag indicating a binary operator can be folded into an assignment
     bool foldAssign;
 };
 
@@ -175,7 +209,7 @@ public:
     std::string val;
 };
 
-/// Identifier expression
+// Identifier expression
 class IdentExpr : public ASTExpr
 {
 public:
@@ -464,7 +498,7 @@ public:
     ASTExpr* expr;
 };
 
-/// Loop break statement
+// Loop break statement
 class BreakStmt : public ASTStmt
 {
 public:
@@ -476,7 +510,7 @@ public:
     virtual ~BreakStmt() {}
 };
 
-/// Loop continue statement
+// Loop continue statement
 class ContStmt : public ASTStmt
 {
 public:
@@ -502,7 +536,7 @@ public:
     ASTExpr* expr;
 };
 
-/// IR statement, corresponds to IR instructions producing no output
+// IR statement, corresponds to IR instructions producing no output
 class IRStmt : public ASTStmt
 {
 public:
@@ -557,35 +591,35 @@ public:
 
 };
 
-/// Object member operator
+// Object member operator
 const OpInfo OP_MEMBER = { ".", "", 2, 16, 'l', false, false };
 
-/// Array indexing
+// Array indexing
 const OpInfo OP_INDEX = { "[", "]", 2, 16, 'l', false, false };
 
-/// Object extension
+// Object extension
 const OpInfo OP_OBJ_EXT = { "::", "", 2, 16, 'l', false, false };
 
-/// Function call, variable arity
+// Function call, variable arity
 const OpInfo OP_CALL = { "(", ")", -1, 15, 'l', false, false };
 
-/// Method call
+// Method call
 const OpInfo OP_M_CALL = { ":", "", 2, 14, 'l', false, false };
 
-/// Prefix unary operators
+// Prefix unary operators
 const OpInfo OP_NEG = { "-", "", 1, 13, 'r', false, false };
 const OpInfo OP_NOT = { "!", "", 1, 13, 'r', false, false };
 const OpInfo OP_BIT_NOT = { "~", "", 1, 13, 'r', false, false };
 const OpInfo OP_TYPEOF = { "typeof", "", 1, 13, 'r', false, false };
 
-/// Binary arithmetic operators
+// Binary arithmetic operators
 const OpInfo OP_MUL = { "*", "", 2, 12, 'l', false, true };
 const OpInfo OP_DIV = { "/", "", 2, 12, 'l', true, true };
 const OpInfo OP_MOD = { "%", "", 2, 12, 'l', true, true };
 const OpInfo OP_ADD = { "+", "", 2, 11, 'l', false, true };
 const OpInfo OP_SUB = { "-", "", 2, 11, 'l', true, true };
 
-/// Relational operators
+// Relational operators
 const OpInfo OP_LT = { "<", "", 2, 9, 'l', false, false };
 const OpInfo OP_LE = { "<=", "", 2, 9, 'l', false, false };
 const OpInfo OP_GT = { ">", "", 2, 9, 'l', false, false };
@@ -593,11 +627,11 @@ const OpInfo OP_GE = { ">=", "", 2, 9, 'l', false, false };
 const OpInfo OP_IN = { "in", "", 2, 9, 'l', false, false };
 const OpInfo OP_INSTOF = { "instanceof", "", 2, 9, 'l', false, false };
 
-/// Equality comparison
+// Equality comparison
 const OpInfo OP_EQ = { "==", "", 2, 8, 'l', false, false };
 const OpInfo OP_NE = { "!=", "", 2, 8, 'l', false, false };
 
-/// Bitwise operators
+// Bitwise operators
 const OpInfo OP_BIT_AND = { "&", "", 2, 7, 'l', true, true };
 const OpInfo OP_BIT_XOR = { "^", "", 2, 6, 'l', true, true };
 const OpInfo OP_BIT_OR = { "|", "", 2, 5, 'l', true, true };
@@ -605,14 +639,14 @@ const OpInfo OP_BIT_SHL  = { "<<", "", 2, 10, 'l', false, true };  // shift left
 const OpInfo OP_BIT_SHR  = { ">>", "", 2, 10, 'l', false, true };  // sign-extending shift right
 const OpInfo OP_BIT_USHR = { ">>>", "", 2, 10, 'l', false, true }; // unsigned shift right
 
-/// Logical operators
+// Logical operators
 const OpInfo OP_AND = { "&&", "", 2, 4, 'l', true };
 const OpInfo OP_OR = { "||", "", 2, 3, 'l', true };
 
 // Assignment
 const OpInfo OP_ASSIGN = { "=", "", 2, 1, 'r', false };
 
-/// Read an entire file at once
+// Read an entire file at once
 std::string readFile(std::string fileName)
 {
     FILE* file = fopen(fileName.c_str(), "rb");
@@ -663,7 +697,7 @@ Input::~Input()
 {
 }
 
-/// Peek at a character from the input
+// Peek at a character from the input
 char Input::peekCh()
 {
     if (strIdx >= inStr.length())
@@ -672,7 +706,7 @@ char Input::peekCh()
     return inStr[strIdx];
 }
 
-/// Read a character from the input
+// Read a character from the input
 char Input::readCh()
 {
     char ch = peekCh();
@@ -704,13 +738,13 @@ char Input::readCh()
     return ch;
 }
 
-/// Test if the end of file has been reached
+// Test if the end of file has been reached
 bool Input::eof()
 {
     return peekCh() == '\0';
 }
 
-/// Peek to check if a string is next in the input
+// Peek to check if a string is next in the input
 bool Input::next(const std::string& str)
 {
     size_t idx = 0;
@@ -727,8 +761,8 @@ bool Input::next(const std::string& str)
     return true;
 }
 
-/// Try and match a given string in the input
-/// The string is consumed if matched
+// Try and match a given string in the input
+// The string is consumed if matched
 bool Input::match(const std::string& str)
 {
     assert (str.length() > 0);
@@ -744,7 +778,7 @@ bool Input::match(const std::string& str)
     return false;
 }
 
-/// Fail if the input doesn't match a given string
+// Fail if the input doesn't match a given string
 void Input::expect(const std::string str)
 {
     if (!match(str))
@@ -753,7 +787,7 @@ void Input::expect(const std::string str)
     }
 }
 
-/// Consume whitespace and comments
+// Consume whitespace and comments
 void Input::eatWS()
 {
     //std::cout << "entering eatWS" << std::endl;
@@ -818,21 +852,21 @@ void Input::eatWS()
     }
 }
 
-/// Version of next which also eats preceding whitespace
+// Version of next which also eats preceding whitespace
 bool Input::nextWS(const std::string& str)
 {
     eatWS();
     return next(str);
 }
 
-/// Version of match which also eats preceding whitespace
+// Version of match which also eats preceding whitespace
 bool Input::matchWS(const std::string& str)
 {
     eatWS();
     return match(str);
 }
 
-/// Version of expect which eats preceding whitespace
+// Version of expect which eats preceding whitespace
 void Input::expectWS(const std::string str)
 {
     eatWS();
@@ -1784,7 +1818,7 @@ FunExpr* parseFile(std::string fileName)
     return parseUnit(input);
 }
 
-/// Test that the parsing of a string succeeds
+// Test that the parsing of a string succeeds
 FunExpr* testParse(std::string str)
 {
     std::cout << str << std::endl;
@@ -1801,7 +1835,7 @@ FunExpr* testParse(std::string str)
     }
 }
 
-/// Test that the parsing of a string fails
+// Test that the parsing of a string fails
 void testParseFail(std::string str)
 {
     std::cout << str << std::endl;
@@ -1821,14 +1855,14 @@ void testParseFail(std::string str)
     exit(-1);
 }
 
-/// Test that the parsing of a file succeeds
+// Test that the parsing of a file succeeds
 ASTNode* testParseFile(std::string fileName)
 {
     std::cout << "parsing image file \"" << fileName << "\"" << std::endl;
     return parseFile(fileName);
 }
 
-/// Test the functionality of the parser
+// Test the functionality of the parser
 void testParser()
 {
     printf("parser tests\n");
