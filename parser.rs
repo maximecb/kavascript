@@ -9,6 +9,18 @@ pub struct ParseError
     col_no: u32,
 }
 
+impl ParseError
+{
+    pub fn new(input: &Input, msg: &str) -> Self
+    {
+        ParseError {
+            msg: msg.to_string(),
+            line_no: input.line_no,
+            col_no: input.col_no
+        }
+    }
+}
+
 pub type Result<T> = std::result::Result<T, ParseError>;
 
 pub struct Input
@@ -64,7 +76,8 @@ impl Input
     {
         let ch = self.peek_ch();
 
-        // Strictly reject invalid input characters
+        // Strictly reject characters outside of the useful ASCII range
+        // We can remove this restriction later if needed
         if (ch < '\x20' || ch > '\x7E') && (ch != '\n' && ch != '\t' && ch != '\r')
         {
             //char hexStr[64];
@@ -78,7 +91,7 @@ impl Input
             );
             */
 
-            //return Result::ParseError()
+            return Result::Err(ParseError::new(self, "invalid character in input"));
         }
 
         // Move to the next char
@@ -97,25 +110,30 @@ impl Input
         return Result::Ok(ch);
     }
 
-    // Match a token in the input
-    pub fn match_token(&mut self, str: String) -> Result<bool>
+    // Match a string in the input, no preceding whitespace allowed
+    pub fn match_exact(&mut self, token: &str) -> Result<bool>
     {
-        // NOTE: we ideally would want to use eat_ws here.
-        // However, this would cause recursion.
-
         // NOTE: we need to take care of the position, line number, etc.
         // May want to use peek/read_ch for that.
+
+
+
+
+        return Result::Ok(false);
+    }
+
+    // Match a string in the input, ignoring preceding whitespace
+    pub fn match_token(&mut self, token: &str) -> Result<bool>
+    {
+        // Consume preceding whitespace
+        self.eat_ws()?;
+
 
 
 
         
         return Result::Ok(false);
     }
-
-
-
-
-
 
     // Consume whitespace and comments
     pub fn eat_ws(&mut self) -> Result<()>
@@ -138,23 +156,25 @@ impl Input
                 continue;
             }
 
-            /*
             // If this is a single-line comment
-            if (match("//"))
+            if self.match_exact("//")?
             {
                 // Read until and end of line is reached
-                for (;;)
+                loop
                 {
-                    if (eof())
-                        return;
-
-                    if (readCh() == '\n')
+                    if self.eof()
+                    {
                         break;
+                    }
+
+                    if self.read_ch()? == '\n'
+                    {
+                        break;
+                    }
                 }
 
                 continue;
             }
-            */
 
             /*
             // If this is a multi-line comment
@@ -188,6 +208,10 @@ impl Input
         return Result::Ok(());
     }
 
+    // TODO: expect
+    // Skip the expect_exact version for now. YAGNI.
+
+
 
 
 
@@ -195,4 +219,14 @@ impl Input
 
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
 
+    #[test]
+    fn it_works() {
+        //assert_eq!(2 + 2, 4);
+
+
+    }
+}
