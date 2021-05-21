@@ -1,12 +1,18 @@
 # Plush
 
+**Please note that Plush is at the experimental stage. You are likely to encounter bugs
+and breaking changes in the language.***
+
 Minimalistic, dynamically-typed programming language for fun/didactic/tutorial purposes. Implemented in Rust.
 
 Features/Goals:
+- Syntax inspired from JS, Wren, Rust
+- Simple object model based on prototypal inheritance
+- Immutable strings
+- Variales and object fields are immutable by default
 - Token-threaded, stack-based interpreter
 - JIT based on Lazy Basic Block Versioning (LBBV)
-- Single-generation copying GC
-- Immutable strings
+- Fast single-generation copying GC
 
 Design principles:
 - The syntax should seem familiar and easy to understand to most

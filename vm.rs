@@ -1,9 +1,10 @@
 /*
+// Objects are aligned to 16-byte (2x64-bit) boundaries,
+// which gives us 4 bits to spare for type tags.
+
 TODO: need some kind of Value struct/type
 - 32-bit payload for integers?
 - Way to tag and untag pointers, integers, etc.
-
-If we align objects to 16-byte boundaries, we can spare up to 4 bits for tags.
 
 Basic types, kinds of values:
 - Nil (should probably be all zeros, evaluate to false)

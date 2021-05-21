@@ -219,13 +219,24 @@ impl Input
 
 }
 
+// TODO:
+// parse_file
+
+// TODO:
+// assert_parses!()
+// assert_fails!()
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
+    fn test_input() {
+
+
         //assert_eq!(2 + 2, 4);
+
+
 
 
     }
