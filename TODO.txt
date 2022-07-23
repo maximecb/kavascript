@@ -74,13 +74,15 @@ then it's unclear that we can ever fully GC methods. This is a good argument for
 
 We probably should focus on parsing functions for now.
 
-TODO: add support for # or // comments in eat_ws()
+
+
+
+
+
+
+
+[DONE] TODO: add support for # or // comments in eat_ws()
 - also add a test for it
-
-
-
-
-
 
 [PASS] TODO: should we make everything a single file, more self-contained?
 - it would simplify things

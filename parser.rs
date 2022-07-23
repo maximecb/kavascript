@@ -233,6 +233,34 @@ impl Input
     }
 }
 
+/// Parse an atomic expression
+fn parse_atom(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
+{
+    let ch = input.peek_ch();
+
+    // Decimal integer literal
+    if ch.is_digit(10) {
+        let int_val = input.parse_int();
+        fun.insns.push(Insn::Push { val: Value::Int(int_val) });
+        return Ok(());
+    }
+
+    // Parenthesized expression
+    if ch == '(' {
+        parse_expr(input, fun)?;
+        input.expect_token(")")?;
+        return Ok(());
+    }
+
+    // Variable reference
+    if ch == '_' || ch.is_alphanumeric() {
+        todo!()
+    }
+
+    input.parse_error("unknown atomic expression")
+}
+
+
 
 
 // Operators
@@ -241,42 +269,36 @@ impl Input
 
 
 
-
-fn parse_atom(input: &mut Input)
+fn parse_expr(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
 {
-
+    todo!();
 }
 
 
 
 
-fn parse_expr(input: &mut Input)
+fn parse_stmt(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
 {
-
+    todo!();
 }
 
 
 
 
-fn parse_stmt(input: &mut Input)
-{
 
+fn parse_fun() -> Result<Function, ParseError>
+{
+    todo!();
 }
 
 
 
 
-fn parse_fun()
+fn parse_unit() -> Result<Function, ParseError>
 {
 
-}
 
-
-
-
-fn parse_unit()
-{
-
+    todo!();
 }
 
 

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub enum Value
 {
     Int(i64),
@@ -5,7 +7,7 @@ pub enum Value
 }
 
 // Opcode enumeration
-pub enum Instr
+pub enum Insn
 {
     // Local variable access
     GetLocal { idx: usize },
@@ -29,12 +31,37 @@ pub enum Instr
     Ret,
 }
 
-struct Function
+pub struct Function
 {
+    pub name: String,
+
+    /// Map of local variables to indices in the stack frame
+    pub locals: HashMap<String, usize>,
+
+
+
+    pub insns: Vec<Insn>,
+
 
 }
 
-struct VM
+impl Function
 {
+    fn new() -> Self
+    {
+        todo!();
+    }
+}
 
+pub struct VM
+{
+    stack: Vec<Value>,
+
+    //pc
+
+
+}
+
+impl VM
+{
 }
