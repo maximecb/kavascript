@@ -65,15 +65,15 @@ TODO: make the repo public
 
 TODO: get a basic interpreter going
 
-TODO: implement unit-level parsing, statements
 
 
 
 
 
 
+[DONE] TODO: expression parsing with the shunting yard algorithm
 
-
+[DONE] TODO: implement unit-level parsing, statements
 
 [DONE] TODO: list features in the readme
 - Syntax inspired by JS and C

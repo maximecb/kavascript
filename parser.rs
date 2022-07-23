@@ -260,26 +260,94 @@ fn parse_atom(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
     input.parse_error("unknown atomic expression")
 }
 
-// TODO
-// Operators and precedence
-//
-//
+struct OpInfo
+{
+    op: &'static str,
+    prec: usize,
 
-/// Parse an expression
+    // TODO: assoc?
+}
+
+/// Binary operators and their precedence level
+const BIN_OPS: [OpInfo; 4] = [
+    OpInfo { op: "*", prec: 2 },
+    OpInfo { op: "+", prec: 1 },
+    OpInfo { op: "-", prec: 1 },
+    OpInfo { op: "==", prec: 0 },
+];
+
+/// Try to match a binary operator in the input
+fn match_bin_op(input: &mut Input) -> Option<OpInfo>
+{
+    for op_info in BIN_OPS {
+        if input.match_token(op_info.op) {
+            return Some(op_info);
+        }
+    }
+
+    None
+}
+
+fn emit_op(op: &str, fun: &mut Function)
+{
+    todo!();
+
+
+
+
+}
+
+/// Parse a complex expression
+/// This uses the shunting yard algorithm to parse infix expressions:
+/// https://en.wikipedia.org/wiki/Shunting_yard_algorithm
 fn parse_expr(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
 {
+    // Operator stack
+    let mut op_stack: Vec<OpInfo> = Vec::default();
 
-
+    // Parse the first atomic expression
     parse_atom(input, fun)?;
 
+    loop
+    {
+        if input.eof() {
+            break;
+        }
 
+        let new_op = match_bin_op(input);
 
+        // If no operator could be matched, stop
+        if new_op.is_none() {
+            break
+        }
 
+        let new_op = new_op.unwrap();
 
+        // There must be another expression following
+        parse_atom(input, fun)?;
 
+        while op_stack.len() > 0 {
+            // Get the operator at the top of the stack
+            let top_op = &op_stack[op_stack.len() - 1];
 
+            if top_op.prec > new_op.prec {
+                emit_op(top_op.op, fun);
+                op_stack.pop();
+            }
+            else {
+                break;
+            }
+        }
 
+        op_stack.push(new_op);
+    }
 
+    // Emit all operators remaining on the operator stack
+    while op_stack.len() > 0 {
+        let top_op = &op_stack[op_stack.len() - 1];
+        emit_op(top_op.op, fun);
+        op_stack.pop();
+    }
 
     Ok(())
 }
