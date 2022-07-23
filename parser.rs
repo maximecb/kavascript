@@ -260,67 +260,81 @@ fn parse_atom(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
     input.parse_error("unknown atomic expression")
 }
 
-
-
-
-// Operators
+// TODO
+// Operators and precedence
 //
 //
 
-
-
+/// Parse an expression
 fn parse_expr(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
 {
-    todo!();
+
+
+    parse_atom(input, fun)?;
+
+
+
+
+
+
+
+
+
+
+    Ok(())
 }
 
-
-
-
+/// Parse a statement
 fn parse_stmt(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
 {
-    todo!();
+
+
+
+
+
+
+    // Try to parse this as an expression statement
+    parse_expr(input, fun)?;
+    fun.insns.push(Insn::Pop);
+    input.expect_token(";")
 }
 
-
-
-
-
-fn parse_fun() -> Result<Function, ParseError>
+/// Parse a function definition
+fn parse_fun(input: &mut Input) -> Result<Function, ParseError>
 {
     todo!();
 }
 
-
-
-
-fn parse_unit() -> Result<Function, ParseError>
+/// Parse a single unit of source code (e.g. one source file)
+fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
 {
+    let mut unit_fun = Function::new(&input.src_name);
 
+    loop
+    {
+        if input.eof() {
+            break;
+        }
 
-    todo!();
+        parse_stmt(input, &mut unit_fun)?;
+
+        // TODO: detect function keyword
+    }
+
+    Ok(unit_fun)
 }
-
-
-
-
-
-
-
 
 // TODO:
 // parse_file
 
-// TODO:
-// assert_parses!()
-// assert_fails!()
-
 #[cfg(test)]
-mod tests {
+mod tests
+{
     use super::*;
 
     #[test]
-    fn int_token_int() {
+    fn int_token_int()
+    {
         let mut input = Input::new("1 + 2", "input");
         input.eat_ws();
         assert_eq!(input.parse_int(), 1);
@@ -331,7 +345,8 @@ mod tests {
     }
 
     #[test]
-    fn simple_str() {
+    fn simple_str()
+    {
         let mut input = Input::new(" \"foobar\"", "input");
         input.eat_ws();
         assert!(input.match_token("\""));
@@ -341,7 +356,8 @@ mod tests {
     }
 
     #[test]
-    fn single_line_comment() {
+    fn single_line_comment()
+    {
         let mut input = Input::new("1 // test\n  2", "input");
         assert_eq!(input.parse_int(), 1);
         input.eat_ws();
@@ -351,6 +367,18 @@ mod tests {
     }
 
 
+
+
+
+    #[test]
+    fn simple_unit()
+    {
+        let mut input = Input::new("1;", "src");
+        parse_unit(&mut input).unwrap();
+
+
+
+    }
 
 
 

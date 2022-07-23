@@ -18,10 +18,10 @@ pub enum Insn
     Pop,
     Dup,
 
-    // 32-bit integer operations
-    //I32Add,
-    //I32Sub,
-    //I32Mul,
+    // 64-bit integer operations
+    AddI64,
+    SubI64,
+    MulI64,
 
     // Branch instructions
     Jump { offset: isize },
@@ -33,13 +33,13 @@ pub enum Insn
 
 pub struct Function
 {
+    /// Name of the function
     pub name: String,
 
     /// Map of local variables to indices in the stack frame
     pub locals: HashMap<String, usize>,
 
-
-
+    /// Bytecode making up this function
     pub insns: Vec<Insn>,
 
 
@@ -47,9 +47,13 @@ pub struct Function
 
 impl Function
 {
-    fn new() -> Self
+    pub fn new(name: &str) -> Self
     {
-        todo!();
+        Self {
+            name: name.to_string(),
+            locals: HashMap::default(),
+            insns: Vec::default(),
+        }
     }
 }
 
@@ -64,4 +68,8 @@ pub struct VM
 
 impl VM
 {
+    pub fn eval()
+    {
+
+    }
 }

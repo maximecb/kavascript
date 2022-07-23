@@ -3,21 +3,18 @@
 #![allow(unused_variables)]
 #![allow(unused_parens)]
 
+use std::env;
+
 mod vm;
 use vm::*;
 
 mod parser;
 use parser::*;
 
-
-
-
-
 fn main()
 {
-    println!("Hello");
-
-
+    let args: Vec<String> = env::args().collect();
+    println!("{:?}", args);
 
 
 

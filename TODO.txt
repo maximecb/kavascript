@@ -61,18 +61,11 @@ This is the shunting yard algorithm: https://en.wikipedia.org/wiki/Shunting_yard
 
 -----------------------------------------------------------------------------
 
-Q: do we want to have a bytecode array for each function, or do we want
-to parse everything into one big bytecode array?
+TODO: make the repo public
 
-If we have multiple arrays, have to keep track of which function we're in for safety.
+TODO: get a basic interpreter going
 
-It's tempting to have one big array, though it seems inelegant.
-If we want one big array, then we basically have to return a VM object, which could be ok.
-
-The advantage of multiple arrays is easy GC. If we parse all the bytecode into one big array,
-then it's unclear that we can ever fully GC methods. This is a good argument for multiple arrays.
-
-We probably should focus on parsing functions for now.
+TODO: implement unit-level parsing, statements
 
 
 
@@ -80,6 +73,11 @@ We probably should focus on parsing functions for now.
 
 
 
+
+
+[DONE] TODO: list features in the readme
+- Syntax inspired by JS and C
+- Integer and string literals
 
 [DONE] TODO: add support for # or // comments in eat_ws()
 - also add a test for it
