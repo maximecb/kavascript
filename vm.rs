@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+#[derive(Debug, Clone)]
 pub enum Value
 {
     Int(i64),
@@ -7,6 +8,7 @@ pub enum Value
 }
 
 // Opcode enumeration
+#[derive(Debug, Clone)]
 pub enum Insn
 {
     // Local variable access
@@ -61,16 +63,17 @@ pub struct VM
 {
     stack: Vec<Value>,
 
-    //pc
-
-
+    pc: *const Insn,
 }
 
 impl VM
 {
     pub fn new() -> Self
     {
-        todo!();
+        Self {
+            stack: Vec::default(),
+            pc: 0 as *const Insn,
+        }
     }
 
     pub fn stack_size(&self) -> usize
@@ -78,14 +81,41 @@ impl VM
         self.stack.len()
     }
 
-    pub fn eval(&mut self)
+    pub fn stack_pop(&mut self) -> Value
     {
-
+        self.stack.pop().expect("stack empty")
     }
 
+    pub fn eval(&mut self, unit: &Function)
+    {
+        use Insn::*;
+
+        self.pc = &unit.insns[0] as *const Insn;
+
+        loop
+        {
+            //let insn = *self.pc as &Insn;
+
+            let insn = unsafe { &*self.pc };
+
+
+            match insn {
+                Push { val } => {
+                    self.stack.push(val.clone());
+                }
+
+
+
+                _ => panic!()
+            }
 
 
 
 
 
+
+
+
+        }
+    }
 }

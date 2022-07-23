@@ -445,7 +445,6 @@ mod tests
         parse_unit(&mut input).unwrap();
     }
 
-
     #[test]
     fn infix_exprs()
     {

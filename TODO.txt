@@ -122,7 +122,6 @@ TODO: write some evaluation tests
 
 TODO: get a basic interpreter going
 
-TODO: convert instruction names to use snake case
 
 
 
