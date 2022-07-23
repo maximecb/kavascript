@@ -76,8 +76,8 @@ impl Input
         return self.input_str[self.pos];
     }
 
-    // Read a character from the input
-    pub fn read_ch(&mut self) -> char
+    // Consume a character from the input
+    pub fn eat_ch(&mut self) -> char
     {
         let ch = self.peek_ch();
 
@@ -114,7 +114,7 @@ impl Input
             // Consume whitespace characters
             if ch == ' ' || ch == '\t'
             {
-                self.read_ch();
+                self.eat_ch();
                 continue;
             }
 
@@ -126,10 +126,22 @@ impl Input
     // Match a string in the input, no preceding whitespace allowed
     pub fn match_exact(&mut self, token: &str) -> bool
     {
-        // NOTE: we need to take care of the position, line number, etc.
-        // May want to use peek/read_ch for that.
-        todo!();
-        //return false;
+        if token.len() < self.input_str.len() {
+            return false;
+        }
+
+        let token_chars: Vec<char> = token.chars().collect();
+        let end_pos = self.pos + token_chars.len();
+
+        if token_chars == self.input_str[self.pos..end_pos] {
+            for i in 0..token_chars.len() {
+                self.eat_ch();
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     // Match a string in the input, ignoring preceding whitespace
@@ -138,14 +150,37 @@ impl Input
         // Consume preceding whitespace
         self.eat_ws();
 
-
-
-
-
-        todo!();
-
-        //return false;
+        return self.match_exact(token);
     }
+
+
+
+
+    pub fn parse_error()
+    {
+
+
+
+    }
+
+
+    // TODO: this can produce a parse error
+    pub fn expect_token(&mut self, token: &str)
+    {
+
+    }
+
+
+
+    // TODO: this can also produce a parse error if there is no input
+    pub fn parse_int(&mut self) -> i64
+    {
+
+
+
+        return 0;
+    }
+
 
 
 
