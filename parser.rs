@@ -1,7 +1,10 @@
 use std::fs::File;
 use std::io;
 use std::io::Read;
+use std::error::Error;
+use std::fmt;
 
+#[derive(Debug)]
 pub struct ParseError
 {
     msg: String,
@@ -20,6 +23,10 @@ impl ParseError
         }
     }
 }
+
+
+
+
 
 
 
@@ -59,13 +66,13 @@ impl Input
         }
     }
 
-    // Test if the end of the input has been reached
+    /// Test if the end of the input has been reached
     pub fn eof(&self) -> bool
     {
         return self.pos >= self.input_str.len();
     }
 
-    // Peek at a character from the input
+    /// Peek at a character from the input
     pub fn peek_ch(&self) -> char
     {
         if self.pos > self.input_str.len()
@@ -76,7 +83,7 @@ impl Input
         return self.input_str[self.pos];
     }
 
-    // Consume a character from the input
+    /// Consume a character from the input
     pub fn eat_ch(&mut self) -> char
     {
         let ch = self.peek_ch();
@@ -97,7 +104,7 @@ impl Input
         return ch;
     }
 
-    // Consume whitespace
+    /// Consume whitespace
     pub fn eat_ws(&mut self)
     {
         // Until the end of the whitespace
@@ -123,7 +130,7 @@ impl Input
         }
     }
 
-    // Match a string in the input, no preceding whitespace allowed
+    /// Match a string in the input, no preceding whitespace allowed
     pub fn match_exact(&mut self, token: &str) -> bool
     {
         if token.len() < self.input_str.len() {
@@ -144,7 +151,7 @@ impl Input
         return false;
     }
 
-    // Match a string in the input, ignoring preceding whitespace
+    /// Match a string in the input, ignoring preceding whitespace
     pub fn match_token(&mut self, token: &str) -> bool
     {
         // Consume preceding whitespace
@@ -153,40 +160,51 @@ impl Input
         return self.match_exact(token);
     }
 
-
-
-
-    pub fn parse_error()
+    /// Shortcut for yielding a parse error wrapped in a result type
+    pub fn parse_error<T>(&self, msg: &str) -> Result<T, ParseError>
     {
-
-
-
+        Err(ParseError::new(self, msg))
     }
 
-
-    // TODO: this can produce a parse error
-    pub fn expect_token(&mut self, token: &str)
+    /// Produce an error if the input doesn't match a given token
+    pub fn expect_token(&mut self, token: &str) -> Result<(), ParseError>
     {
+        if self.match_token(token) {
+            return Ok(())
+        }
 
-    }
-
-
-
-    // TODO: this can also produce a parse error if there is no input
-    pub fn parse_int(&mut self) -> i64
-    {
-
-
-
-        return 0;
+        self.parse_error(&format!("expected token \"{}\"", token))
     }
 
 
 
 
 
-    // TODO: expect
-    // Skip the expect_exact version for now. YAGNI.
+
+
+    pub fn parse_int(&mut self) -> Result<i64, ParseError>
+    {
+        let int_val = 0_i64;
+
+        //return self.parse_error("foo");
+
+
+        return Ok(int_val);
+    }
+
+
+
+
+    pub fn parse_str(&mut self) -> Result<String, ParseError>
+    {
+        let out = String::new();
+
+
+
+
+
+        return Ok(out);
+    }
 
 
 
