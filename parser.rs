@@ -1,7 +1,6 @@
 use std::fs::File;
 use std::io;
 use std::io::Read;
-use std::error::Error;
 use std::fmt;
 
 #[derive(Debug)]
@@ -24,16 +23,11 @@ impl ParseError
     }
 }
 
-
-
-
-
-
-
-
-
-
-
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "parse error")
+    }
+}
 
 pub struct Input
 {
@@ -176,18 +170,27 @@ impl Input
         self.parse_error(&format!("expected token \"{}\"", token))
     }
 
-
-
-
-
-
-
+    /// Parse a decimal integer value
     pub fn parse_int(&mut self) -> Result<i64, ParseError>
     {
-        let int_val = 0_i64;
+        let mut int_val = 0_i64;
 
-        //return self.parse_error("foo");
+        loop
+        {
+            if self.eof() {
+                return self.parse_error("unexpected end of input while parsing integer");
+            }
 
+            let ch = self.peek_ch();
+            let digit = ch.to_digit(10);
+
+            if digit.is_none() {
+                break
+            }
+
+            int_val = 10 * int_val + digit.unwrap() as i64;
+            self.eat_ch();
+        }
 
         return Ok(int_val);
     }
