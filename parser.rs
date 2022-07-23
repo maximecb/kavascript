@@ -195,26 +195,29 @@ impl Input
         return Ok(int_val);
     }
 
-
-
-
+    /// Parse a string literal
     pub fn parse_str(&mut self) -> Result<String, ParseError>
     {
-        let out = String::new();
+        let mut out = String::new();
 
+        loop
+        {
+            if self.eof() {
+                return self.parse_error("unexpected end of input while parsing integer");
+            }
 
+            let ch = self.peek_ch();
 
+            if ch == '\"' {
+                break
+            }
 
+            out.push(ch);
+            self.eat_ch();
+        }
 
         return Ok(out);
     }
-
-
-
-
-
-
-
 }
 
 
