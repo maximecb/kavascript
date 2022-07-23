@@ -4,7 +4,7 @@
 name = "plush"
 version = "0.1.0"
 authors = ["Maxime Chevalier-Boisvert <maximechevalierb@gmail.com>"]
-edition = "2018" # Rust language edition
+edition = "2021" # Rust language edition
 repository = "https://github.com/maximecb/plush/"
 
 [dependencies]

@@ -21,7 +21,12 @@ impl ParseError
     }
 }
 
-pub type Result<T> = std::result::Result<T, ParseError>;
+
+
+
+
+
+
 
 pub struct Input
 {
@@ -72,27 +77,9 @@ impl Input
     }
 
     // Read a character from the input
-    pub fn read_ch(&mut self) -> Result<char>
+    pub fn read_ch(&mut self) -> char
     {
         let ch = self.peek_ch();
-
-        // Strictly reject characters outside of the useful ASCII range
-        // We can remove this restriction later if needed
-        if (ch < '\x20' || ch > '\x7E') && (ch != '\n' && ch != '\t' && ch != '\r')
-        {
-            //char hexStr[64];
-            //sprintf(hexStr, "0x%02X", (int)ch);
-
-            // FIXME:
-            /*
-            throw ParseError(
-                *this,
-                "invalid character in input, " + std::string(hexStr)
-            );
-            */
-
-            return Result::Err(ParseError::new(self, "invalid character in input"));
-        }
 
         // Move to the next char
         self.pos += 1;
@@ -107,36 +94,11 @@ impl Input
             self.col_no += 1;
         }
 
-        return Result::Ok(ch);
+        return ch;
     }
 
-    // Match a string in the input, no preceding whitespace allowed
-    pub fn match_exact(&mut self, token: &str) -> Result<bool>
-    {
-        // NOTE: we need to take care of the position, line number, etc.
-        // May want to use peek/read_ch for that.
-
-
-
-
-        return Result::Ok(false);
-    }
-
-    // Match a string in the input, ignoring preceding whitespace
-    pub fn match_token(&mut self, token: &str) -> Result<bool>
-    {
-        // Consume preceding whitespace
-        self.eat_ws()?;
-
-
-
-
-        
-        return Result::Ok(false);
-    }
-
-    // Consume whitespace and comments
-    pub fn eat_ws(&mut self) -> Result<()>
+    // Consume whitespace
+    pub fn eat_ws(&mut self)
     {
         // Until the end of the whitespace
         loop
@@ -152,61 +114,41 @@ impl Input
             // Consume whitespace characters
             if ch == ' ' || ch == '\t'
             {
-                self.read_ch()?;
+                self.read_ch();
                 continue;
             }
-
-            // If this is a single-line comment
-            if self.match_exact("//")?
-            {
-                // Read until and end of line is reached
-                loop
-                {
-                    if self.eof()
-                    {
-                        break;
-                    }
-
-                    if self.read_ch()? == '\n'
-                    {
-                        break;
-                    }
-                }
-
-                continue;
-            }
-
-            /*
-            // If this is a multi-line comment
-            if (match("/*"))
-            {
-                // Read until the end of the comment
-                for (;;)
-                {
-                    if (eof())
-                    {
-                        throw ParseError(
-                            *this,
-                            "end of input in multiline comment"
-                        );
-                    }
-
-                    if (readCh() == '*' && match("/"))
-                    {
-                        break;
-                    }
-                }
-
-                continue;
-            }
-            */*/
 
             // This isn't whitespace, stop
             break;
         }
-
-        return Result::Ok(());
     }
+
+    // Match a string in the input, no preceding whitespace allowed
+    pub fn match_exact(&mut self, token: &str) -> bool
+    {
+        // NOTE: we need to take care of the position, line number, etc.
+        // May want to use peek/read_ch for that.
+        todo!();
+        //return false;
+    }
+
+    // Match a string in the input, ignoring preceding whitespace
+    pub fn match_token(&mut self, token: &str) -> bool
+    {
+        // Consume preceding whitespace
+        self.eat_ws();
+
+
+
+
+
+        todo!();
+
+        //return false;
+    }
+
+
+
 
     // TODO: expect
     // Skip the expect_exact version for now. YAGNI.
@@ -218,6 +160,23 @@ impl Input
 
 
 }
+
+
+
+
+
+fn parse_atom()
+{
+
+}
+
+
+
+
+
+
+
+
 
 // TODO:
 // parse_file
