@@ -28,3 +28,13 @@ pub enum Instr
     Call { target: usize },
     Ret,
 }
+
+struct Function
+{
+
+}
+
+struct VM
+{
+
+}

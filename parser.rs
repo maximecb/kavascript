@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io;
 use std::io::Read;
 use std::fmt;
+use crate::vm::*;
 
 #[derive(Debug)]
 pub struct ParseError
@@ -206,14 +207,13 @@ impl Input
                 return self.parse_error("unexpected end of input while parsing integer");
             }
 
-            let ch = self.peek_ch();
+            let ch = self.eat_ch();
 
             if ch == '\"' {
                 break
             }
 
             out.push(ch);
-            self.eat_ch();
         }
 
         return Ok(out);
@@ -285,12 +285,28 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_input_simple() {
+    fn int_token_int() {
         let mut input = Input::new("1 + 2", "input");
         input.eat_ws();
         assert_eq!(input.parse_int(), 1);
         assert!(input.match_token("+"));
         input.eat_ws();
         assert_eq!(input.parse_int(), 2);
+        assert!(input.eof());
     }
+
+    #[test]
+    fn simple_str() {
+        let mut input = Input::new(" \"foobar\"", "input");
+        input.eat_ws();
+        assert!(input.match_token("\""));
+        assert_eq!(input.parse_str().unwrap(), "foobar");
+        input.eat_ws();
+        assert!(input.eof());
+    }
+
+
+
+
+
 }
