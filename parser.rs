@@ -49,11 +49,11 @@ pub struct Input
 
 impl Input
 {
-    pub fn new(input_str: String, src_name: String) -> Self
+    pub fn new(input_str: &str, src_name: &str) -> Self
     {
         Input {
             input_str: input_str.chars().collect(),
-            src_name: src_name,
+            src_name: src_name.to_string(),
             pos: 0,
             line_no: 1,
             col_no: 1
@@ -127,12 +127,12 @@ impl Input
     /// Match a string in the input, no preceding whitespace allowed
     pub fn match_exact(&mut self, token: &str) -> bool
     {
-        if token.len() < self.input_str.len() {
-            return false;
-        }
-
         let token_chars: Vec<char> = token.chars().collect();
         let end_pos = self.pos + token_chars.len();
+
+        if end_pos > self.input_str.len() {
+            return false;
+        }
 
         if token_chars == self.input_str[self.pos..end_pos] {
             for i in 0..token_chars.len() {
@@ -171,14 +171,14 @@ impl Input
     }
 
     /// Parse a decimal integer value
-    pub fn parse_int(&mut self) -> Result<i64, ParseError>
+    pub fn parse_int(&mut self) -> i64
     {
         let mut int_val = 0_i64;
 
         loop
         {
             if self.eof() {
-                return self.parse_error("unexpected end of input while parsing integer");
+                break;
             }
 
             let ch = self.peek_ch();
@@ -192,7 +192,7 @@ impl Input
             self.eat_ch();
         }
 
-        return Ok(int_val);
+        return int_val;
     }
 
     /// Parse a string literal
@@ -222,13 +222,49 @@ impl Input
 
 
 
+// Operators
+//
+//
 
 
-fn parse_atom()
+
+
+fn parse_atom(input: &mut Input)
 {
 
 }
 
+
+
+
+fn parse_expr(input: &mut Input)
+{
+
+}
+
+
+
+
+fn parse_stmt(input: &mut Input)
+{
+
+}
+
+
+
+
+fn parse_fun()
+{
+
+}
+
+
+
+
+fn parse_unit()
+{
+
+}
 
 
 
@@ -249,13 +285,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_input() {
-
-
-        //assert_eq!(2 + 2, 4);
-
-
-
-
+    fn test_input_simple() {
+        let mut input = Input::new("1 + 2", "input");
+        input.eat_ws();
+        assert_eq!(input.parse_int(), 1);
+        assert!(input.match_token("+"));
+        input.eat_ws();
+        assert_eq!(input.parse_int(), 2);
     }
 }

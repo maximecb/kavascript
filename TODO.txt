@@ -1,5 +1,74 @@
+I'm not sure if precedence climbing is possible without an AST.
+Though it looks like it should be.
 
+It's a matter of when you insert the operators into the bytecode stream.
 
+2 + 3 * 4
+    push 2
+    push 3
+    add
+    push 4
+    mul
+You have to remember that you had an add operator before.
+
+2 + 3 + 4 * 5
+    push 2
+    push 3
+    add
+    push 4
+    add
+    push 5
+    mul
+
+2 * 3 + 4 * 5
+    push 2
+    push 3
+    mul
+    push 4
+    push 5
+    mul
+    add # Have to remember this guy, keep it on a stack?
+
+1 == 2 * 3 + 4 * 5
+    push 1
+    push 2
+    push 3
+    mul
+    push 4
+    push 5
+    mul
+    eq
+
+If we keep a stack of ops, we either run these operators at the very end, unstack
+Or when the current operator has lower or equal priority?
+
+7 + 1 == 2 * 3 + 4
+    push 7
+    push 1
+    add # because add has higher priority than ==
+    # Stack ==
+    push 2
+    push 3
+    mul # because + has higher priority than +
+    push 4
+    add # because + has higher priority than == (top of stack)
+    eq
+
+If my top of stack operator has higher priority, I run that?
+Otherwise I run the latest I just parsed?
+
+This is the shunting yard algorithm: https://en.wikipedia.org/wiki/Shunting_yard_algorithm
+
+-----------------------------------------------------------------------------
+
+Q: do we want to have a bytecode array for each function, or do we want
+to parse everything into one big bytecode array?
+
+If we have multiple arrays, have to keep track of which function we're in for safety.
+
+It's tempting to have one big array, though it seems inelegant.
+
+TODO: add support for # or // comments in eat_ws()
 
 
 
