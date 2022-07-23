@@ -68,8 +68,24 @@ pub struct VM
 
 impl VM
 {
-    pub fn eval()
+    pub fn new() -> Self
+    {
+        todo!();
+    }
+
+    pub fn stack_size(&self) -> usize
+    {
+        self.stack.len()
+    }
+
+    pub fn eval(&mut self)
     {
 
     }
+
+
+
+
+
+
 }

@@ -61,15 +61,75 @@ This is the shunting yard algorithm: https://en.wikipedia.org/wiki/Shunting_yard
 
 -----------------------------------------------------------------------------
 
+There's a bit of an issue with assignments, because you don't know you're parsing an assignment
+expression.
+
+At the same time, we don't really want to support multiple assignments in an expression, because
+that's really stupid.
+
+We'd like to support simple assignment expressions, such as:
+a = 3
+a[b] = 3
+a[b][c] = 3
+a[b][c+2] = 3
+a.b.c = 3
+
+At the moment, we run into an issue because if we just parse a,
+That's going to read the value of a
+
+We could implement a new operator, such as set a = 3
+That would solve this problem and avoid backtracking
+Alternatively, *a = 3, or ~a = 3, a mutation operator
+
+Also note that generally, an expression statement on its own isn't super useful.
+
+If you parse an ident, this could be an atomic expression, or it could be an assignment
+If you have an array indexing expression, same thing.
+
+With backtracking, you would parse as normal, and when you encounter an assignment, you would
+fail and backtrack.
+
+Or maybe we can just remember how many bytecodes we pushed for that last expression,
+as well as our position before.
+
+NOTE: normally, you *only* have unary expressions on the lhs of an assignment
+Hence, when parsing an atomic expression, you could actually check
+am I parsing a the reference or a = 3;
+
+If I'm parsing an assignment, then I parse the rhs recursively and then do
+the assignment.
+
+If I'm parsing array indexing, I evaluate the base, then the index, but instead
+of reading, I parse the rhs recursively.
+
+There's a potential problem with that though?
+a.b.c
+parsing a.b, I know it's not an assignment, I evaluate
+
+a[b][c] = 2 + 3
+When I find the equal, I assign instead of reading
+This seems like it should work.
+
+-----------------------------------------------------------------------------
+
 TODO: make the repo public
+
+TODO: parse if-else statements
+
+TODO: implement let decls
+
+TODO: write some evaluation tests
 
 TODO: get a basic interpreter going
 
+TODO: convert instruction names to use snake case
 
 
 
 
+[DONE] TODO: test that some things fail to parse
 
+[DONE] TODO: test that shunting yard works parsing wise
 
 [DONE] TODO: expression parsing with the shunting yard algorithm
 

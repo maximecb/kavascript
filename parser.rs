@@ -30,6 +30,7 @@ impl fmt::Display for ParseError {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Input
 {
     // Input string to be parsed
@@ -236,6 +237,7 @@ impl Input
 /// Parse an atomic expression
 fn parse_atom(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
 {
+    input.eat_ws();
     let ch = input.peek_ch();
 
     // Decimal integer literal
@@ -247,6 +249,7 @@ fn parse_atom(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
 
     // Parenthesized expression
     if ch == '(' {
+        input.eat_ch();
         parse_expr(input, fun)?;
         input.expect_token(")")?;
         return Ok(());
@@ -290,11 +293,12 @@ fn match_bin_op(input: &mut Input) -> Option<OpInfo>
 
 fn emit_op(op: &str, fun: &mut Function)
 {
-    todo!();
-
-
-
-
+    match op {
+        "*" => fun.insns.push(Insn::AddI64),
+        "+" => fun.insns.push(Insn::AddI64),
+        "-" => fun.insns.push(Insn::SubI64),
+        _ => panic!()
+    }
 }
 
 /// Parse a complex expression
@@ -434,20 +438,27 @@ mod tests
         assert!(input.eof());
     }
 
-
-
-
-
     #[test]
     fn simple_unit()
     {
         let mut input = Input::new("1;", "src");
         parse_unit(&mut input).unwrap();
-
-
-
     }
 
+
+    #[test]
+    fn infix_exprs()
+    {
+        // Should parse
+        parse_unit(&mut Input::new("1 + 2;", "src")).unwrap();
+        parse_unit(&mut Input::new("1 + 2 * 3;", "src")).unwrap();
+        parse_unit(&mut Input::new("1 + 2 + 3;", "src")).unwrap();
+        parse_unit(&mut Input::new("1 + 2 + 3 + 4;", "src")).unwrap();
+        parse_unit(&mut Input::new("(1) + 2 + 3 * 4;", "src")).unwrap();
+
+        // Should not parse
+        assert!(parse_unit(&mut Input::new("1 + 2 +;", "src")).is_err());
+    }
 
 
 
