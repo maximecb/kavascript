@@ -5,9 +5,17 @@ Minimalistic, dynamically-typed toy programming language for fun/didactic/tutori
 ## Installation
 
 Clone this repository:
-git clone git@github.com:maximecb/plush.git
 
 ```
+git clone git@github.com:maximecb/plush.git
+```
+
+Build and run the project:
+
+```
+# Run tests
+cargo test
+
 # Builds and runs the project
 cargo run
 

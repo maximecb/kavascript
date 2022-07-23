@@ -111,10 +111,23 @@ impl Input
                 break;
             }
 
+            // Single-line comments
+            if self.match_exact("//")
+            {
+                loop
+                {
+                    // If we are at the end of the input, stop
+                    if self.eof() || self.eat_ch() == '\n'
+                    {
+                        break;
+                    }
+                }
+            }
+
             let ch = self.peek_ch();
 
             // Consume whitespace characters
-            if ch == ' ' || ch == '\t'
+            if ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n'
             {
                 self.eat_ch();
                 continue;
@@ -304,6 +317,19 @@ mod tests {
         input.eat_ws();
         assert!(input.eof());
     }
+
+    #[test]
+    fn single_line_comment() {
+        let mut input = Input::new("1 // test\n  2", "input");
+        assert_eq!(input.parse_int(), 1);
+        input.eat_ws();
+        dbg!(input.pos);
+        assert_eq!(input.parse_int(), 2);
+        assert!(input.eof());
+    }
+
+
+
 
 
 
