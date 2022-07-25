@@ -11,6 +11,9 @@ pub enum Value
 #[derive(Debug, Clone)]
 pub enum Insn
 {
+    Panic,
+    Halt,
+
     // Local variable access
     GetLocal { idx: usize },
     SetLocal { idx: usize },
@@ -29,7 +32,7 @@ pub enum Insn
     Jump { offset: isize },
     IfTrue { offset: isize },
     IfFalse { offset: isize },
-    Call { target: usize },
+    Call,
     Ret,
 }
 
@@ -100,22 +103,38 @@ impl VM
 
 
             match insn {
+                Halt => return,
+
                 Push { val } => {
                     self.stack.push(val.clone());
                 }
+
+                Pop => {
+                    self.stack.pop();
+                }
+
+
+
+
 
 
 
                 _ => panic!()
             }
 
-
-
-
-
-
-
-
+            // Increment the PC
+            self.pc = unsafe { self.pc.add(1) };
         }
+    }
+}
+
+#[cfg(test)]
+mod tests
+{
+    use super::*;
+
+    #[test]
+    fn test_eval()
+    {
     }
 }

@@ -116,15 +116,42 @@ TODO: make the repo public
 
 TODO: parse if-else statements
 
+TODO: can we make basic assignment parsing work and test it?
+- try with just a = b, a = b = c for now
+- if you do
+    a = b + 1 = c
+    this should be invalid? test in Rust.
+    1 is an atom, can't be assigned
+    a = 1 + b = c
+    this fails with 1+b as invalid lhs
+=> use an evaluation test for this
+TODO: sketch the ordering of operations for some assignments
+
+TODO: fill up table with operators we'll support? some commented out
+
+Note: call, array indexing, member operator have higher priority
+than operators such as unary negation (!).
+Assignment has least precedence.
+
+That means you should push operators such as unary not on the stack (shouldn't be a problem).
+
+When you reach something like membership or array indexing, ideally you'd like to lookahead
+for the next operator. Basically, instead of array read, you'll push an array write. Instead
+of member read, you'll push a member write. Maybe we can defer or rewrite the last bytecode
+insn? We could even check that the last bytecode insn made sense.
+We should also make this check.
+
 TODO: implement let decls
 
 TODO: write some evaluation tests
-
-TODO: get a basic interpreter going
-
+TODO: you should add a call stack and have pc be a usize.
 
 
 
+
+
+
+[DONE] TODO: get a basic interpreter going
 
 [DONE] TODO: test that some things fail to parse
 

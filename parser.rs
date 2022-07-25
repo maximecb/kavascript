@@ -272,6 +272,7 @@ struct OpInfo
 }
 
 /// Binary operators and their precedence level
+/// https://en.cppreference.com/w/c/language/operator_precedence
 const BIN_OPS: [OpInfo; 4] = [
     OpInfo { op: "*", prec: 2 },
     OpInfo { op: "+", prec: 1 },
@@ -392,6 +393,8 @@ fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
 
         // TODO: detect function keyword
     }
+
+    unit_fun.insns.push(Insn::Halt);
 
     Ok(unit_fun)
 }
