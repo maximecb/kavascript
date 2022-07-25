@@ -143,13 +143,21 @@ We should also make this check.
 
 TODO: implement let decls
 
-TODO: write some evaluation tests
+-----------------------------------------------------------------------------
+
+TODO: start by testing returning 1
+
+TODO: add support for compiling return
+- can then test eval on some arithmetic expressions :)
+
 TODO: you should add a call stack and have pc be a usize.
 
 
 
 
 
+
+[DONE] TODO: start by testing compiling empty unit, then unit with just a semicolon
 
 [DONE] TODO: get a basic interpreter going
 

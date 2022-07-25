@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Value
 {
     Int(i64),
     Str(String),
+    Nil,
 }
 
 // Opcode enumeration
@@ -89,7 +90,7 @@ impl VM
         self.stack.pop().expect("stack empty")
     }
 
-    pub fn eval(&mut self, unit: &Function)
+    pub fn eval(&mut self, unit: &Function) -> Value
     {
         use Insn::*;
 
@@ -101,9 +102,8 @@ impl VM
 
             let insn = unsafe { &*self.pc };
 
-
             match insn {
-                Halt => return,
+                Halt => return Value::Nil,
 
                 Push { val } => {
                     self.stack.push(val.clone());
@@ -113,13 +113,15 @@ impl VM
                     self.stack.pop();
                 }
 
+                Ret => {
+                    return self.stack.pop().unwrap();
+                }
 
 
 
 
 
-
-                _ => panic!()
+                _ => panic!("unknown instruction in eval: {:?}", insn)
             }
 
             // Increment the PC
@@ -132,9 +134,25 @@ impl VM
 mod tests
 {
     use super::*;
+    use crate::parser::*;
+
+    fn eval_src(src: &str) -> Value
+    {
+        let mut input = Input::new("1;", "test_src");
+        let unit_fn = parse_unit(&mut input).unwrap();
+        let mut vm = VM::new();
+        return vm.eval(&unit_fn);
+    }
 
     #[test]
     fn test_eval()
     {
+        assert_eq!(eval_src(""), Value::Nil);
+        assert_eq!(eval_src(";"), Value::Nil);
+        assert_eq!(eval_src("1;"), Value::Nil);
+
+
+
+
     }
 }

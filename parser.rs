@@ -379,7 +379,7 @@ fn parse_fun(input: &mut Input) -> Result<Function, ParseError>
 }
 
 /// Parse a single unit of source code (e.g. one source file)
-fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
+pub fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
 {
     let mut unit_fun = Function::new(&input.src_name);
 
@@ -394,7 +394,9 @@ fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
         // TODO: detect function keyword
     }
 
-    unit_fun.insns.push(Insn::Halt);
+    // Return nil
+    unit_fun.insns.push(Insn::Push { val: Value::Nil });
+    unit_fun.insns.push(Insn::Ret);
 
     Ok(unit_fun)
 }
