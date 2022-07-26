@@ -71,7 +71,7 @@ impl Input
     /// Peek at a character from the input
     pub fn peek_ch(&self) -> char
     {
-        if self.pos > self.input_str.len()
+        if self.pos >= self.input_str.len()
         {
             return '\0';
         }
@@ -360,11 +360,12 @@ fn parse_expr(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
 /// Parse a statement
 fn parse_stmt(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
 {
-
-
-
-
-
+    if input.match_token("return") {
+        parse_expr(input, fun)?;
+        fun.insns.push(Insn::Return);
+        input.expect_token(";")?;
+        return Ok(());
+    }
 
     // Try to parse this as an expression statement
     parse_expr(input, fun)?;
@@ -385,6 +386,8 @@ pub fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
 
     loop
     {
+        input.eat_ws();
+
         if input.eof() {
             break;
         }
@@ -396,7 +399,7 @@ pub fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
 
     // Return nil
     unit_fun.insns.push(Insn::Push { val: Value::Nil });
-    unit_fun.insns.push(Insn::Ret);
+    unit_fun.insns.push(Insn::Return);
 
     Ok(unit_fun)
 }
@@ -446,8 +449,10 @@ mod tests
     #[test]
     fn simple_unit()
     {
-        let mut input = Input::new("1;", "src");
-        parse_unit(&mut input).unwrap();
+        parse_unit(&mut Input::new("", "src")).unwrap();
+        parse_unit(&mut Input::new(" ", "src")).unwrap();
+        parse_unit(&mut Input::new("1;", "src")).unwrap();
+        parse_unit(&mut Input::new("1; ", "src")).unwrap();
     }
 
     #[test]
@@ -463,9 +468,4 @@ mod tests
         // Should not parse
         assert!(parse_unit(&mut Input::new("1 + 2 +;", "src")).is_err());
     }
-
-
-
-
-
 }

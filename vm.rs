@@ -34,7 +34,7 @@ pub enum Insn
     IfTrue { offset: isize },
     IfFalse { offset: isize },
     Call,
-    Ret,
+    Return,
 }
 
 pub struct Function
@@ -93,6 +93,7 @@ impl VM
     pub fn eval(&mut self, unit: &Function) -> Value
     {
         use Insn::*;
+        use Value::*;
 
         self.pc = &unit.insns[0] as *const Insn;
 
@@ -113,8 +114,17 @@ impl VM
                     self.stack.pop();
                 }
 
-                Ret => {
-                    return self.stack.pop().unwrap();
+                AddI64 => {
+                    let v0 = self.stack_pop();
+                    let v1 = self.stack_pop();
+                    match (v0, v1) {
+                        (Int(v0), Int(v1)) => self.stack.push(Int(v0 + v1)),
+                        _ => panic!()
+                    }
+                }
+
+                Return => {
+                    return self.stack_pop();
                 }
 
 
@@ -138,7 +148,8 @@ mod tests
 
     fn eval_src(src: &str) -> Value
     {
-        let mut input = Input::new("1;", "test_src");
+        dbg!(src);
+        let mut input = Input::new(src, "test_src");
         let unit_fn = parse_unit(&mut input).unwrap();
         let mut vm = VM::new();
         return vm.eval(&unit_fn);
@@ -148,8 +159,10 @@ mod tests
     fn test_eval()
     {
         assert_eq!(eval_src(""), Value::Nil);
-        assert_eq!(eval_src(";"), Value::Nil);
         assert_eq!(eval_src("1;"), Value::Nil);
+        assert_eq!(eval_src("return 7;"), Value::Int(7));
+        assert_eq!(eval_src("return 1 + 7;"), Value::Int(8));
+        assert_eq!(eval_src("return 1 + 2 + 3;"), Value::Int(6));
 
 
 

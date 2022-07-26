@@ -145,10 +145,7 @@ TODO: implement let decls
 
 -----------------------------------------------------------------------------
 
-TODO: start by testing returning 1
-
-TODO: add support for compiling return
-- can then test eval on some arithmetic expressions :)
+TODO: test priority of mul and add
 
 TODO: you should add a call stack and have pc be a usize.
 
@@ -156,6 +153,9 @@ TODO: you should add a call stack and have pc be a usize.
 
 
 
+
+[DONE] TODO: add support for compiling return
+- can then test eval on some arithmetic expressions :)
 
 [DONE] TODO: start by testing compiling empty unit, then unit with just a semicolon
 
