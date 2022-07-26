@@ -143,16 +143,23 @@ We should also make this check.
 
 TODO: implement let decls
 
+TODO: rename Value::Int to Int64
+
 -----------------------------------------------------------------------------
 
-TODO: test priority of mul and add
-
 TODO: you should add a call stack and have pc be a usize.
+- call_stack: Vec<&'static Function> ?
+  - that's not super safe either!
+
+TODO: implement and test sub
 
 
 
 
 
+[DONE] FIXME: multiplication priority test failing
+
+[DONE] TODO: test priority of mul and add
 
 [DONE] TODO: add support for compiling return
 - can then test eval on some arithmetic expressions :)

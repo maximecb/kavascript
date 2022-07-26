@@ -123,6 +123,15 @@ impl VM
                     }
                 }
 
+                MulI64 => {
+                    let v0 = self.stack_pop();
+                    let v1 = self.stack_pop();
+                    match (v0, v1) {
+                        (Int(v0), Int(v1)) => self.stack.push(Int(v0 * v1)),
+                        _ => panic!()
+                    }
+                }
+
                 Return => {
                     return self.stack_pop();
                 }
@@ -163,9 +172,11 @@ mod tests
         assert_eq!(eval_src("return 7;"), Value::Int(7));
         assert_eq!(eval_src("return 1 + 7;"), Value::Int(8));
         assert_eq!(eval_src("return 1 + 2 + 3;"), Value::Int(6));
-
-
-
-
+        assert_eq!(eval_src("return 1 + 2 * 3;"), Value::Int(7));
+        assert_eq!(eval_src("return 1 + 2 + 3 + 4;"), Value::Int(10));
+        assert_eq!(eval_src("return 1 * 2 + 3 * 4;"), Value::Int(14));
+        assert_eq!(eval_src("return (1 + 2) * 3;"), Value::Int(9));
+        assert_eq!(eval_src("return (1 * 2) + (3 * 4);"), Value::Int(14));
+        assert_eq!(eval_src("return 1 + 2 * 3 + 4;"), Value::Int(11));
     }
 }

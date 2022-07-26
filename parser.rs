@@ -295,7 +295,7 @@ fn match_bin_op(input: &mut Input) -> Option<OpInfo>
 fn emit_op(op: &str, fun: &mut Function)
 {
     match op {
-        "*" => fun.insns.push(Insn::AddI64),
+        "*" => fun.insns.push(Insn::MulI64),
         "+" => fun.insns.push(Insn::AddI64),
         "-" => fun.insns.push(Insn::SubI64),
         _ => panic!()
@@ -328,14 +328,15 @@ fn parse_expr(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
 
         let new_op = new_op.unwrap();
 
-        // There must be another expression following
-        parse_atom(input, fun)?;
+        //println!("{}", new_op.op);
 
         while op_stack.len() > 0 {
             // Get the operator at the top of the stack
             let top_op = &op_stack[op_stack.len() - 1];
 
             if top_op.prec > new_op.prec {
+                println!("emit {}", top_op.op);
+
                 emit_op(top_op.op, fun);
                 op_stack.pop();
             }
@@ -345,6 +346,9 @@ fn parse_expr(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
         }
 
         op_stack.push(new_op);
+
+        // There must be another expression following
+        parse_atom(input, fun)?;
     }
 
     // Emit all operators remaining on the operator stack
@@ -400,6 +404,8 @@ pub fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
     // Return nil
     unit_fun.insns.push(Insn::Push { val: Value::Nil });
     unit_fun.insns.push(Insn::Return);
+
+    //dbg!(&unit_fun.insns);
 
     Ok(unit_fun)
 }
