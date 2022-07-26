@@ -3,7 +3,7 @@ use std::collections::HashMap;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value
 {
-    Int(i64),
+    Int64(i64),
     Str(String),
     Nil,
 }
@@ -24,16 +24,20 @@ pub enum Insn
     Pop,
     Dup,
 
-    // 64-bit integer operations
-    AddI64,
-    SubI64,
-    MulI64,
+    // Arithmetic operations
+    Add,
+    Sub,
+    Mul,
+
+    // Comparisons
+    Eq,
+    Ne,
 
     // Branch instructions
     Jump { offset: isize },
     IfTrue { offset: isize },
     IfFalse { offset: isize },
-    Call,
+    Call { argc: usize },
     Return,
 }
 
@@ -42,13 +46,14 @@ pub struct Function
     /// Name of the function
     pub name: String,
 
-    /// Map of local variables to indices in the stack frame
-    pub locals: HashMap<String, usize>,
+    // TODO: arguments list
+
+
+    /// Number of local variables
+    pub num_locals: usize,
 
     /// Bytecode making up this function
     pub insns: Vec<Insn>,
-
-
 }
 
 impl Function
@@ -57,7 +62,7 @@ impl Function
     {
         Self {
             name: name.to_string(),
-            locals: HashMap::default(),
+            num_locals: 0,
             insns: Vec::default(),
         }
     }
@@ -114,20 +119,29 @@ impl VM
                     self.stack.pop();
                 }
 
-                AddI64 => {
-                    let v0 = self.stack_pop();
+                Add => {
                     let v1 = self.stack_pop();
+                    let v0 = self.stack_pop();
                     match (v0, v1) {
-                        (Int(v0), Int(v1)) => self.stack.push(Int(v0 + v1)),
+                        (Int64(v0), Int64(v1)) => self.stack.push(Int64(v0 + v1)),
                         _ => panic!()
                     }
                 }
 
-                MulI64 => {
-                    let v0 = self.stack_pop();
+                Sub => {
                     let v1 = self.stack_pop();
+                    let v0 = self.stack_pop();
                     match (v0, v1) {
-                        (Int(v0), Int(v1)) => self.stack.push(Int(v0 * v1)),
+                        (Int64(v0), Int64(v1)) => self.stack.push(Int64(v0 - v1)),
+                        _ => panic!()
+                    }
+                }
+
+                Mul => {
+                    let v1 = self.stack_pop();
+                    let v0 = self.stack_pop();
+                    match (v0, v1) {
+                        (Int64(v0), Int64(v1)) => self.stack.push(Int64(v0 * v1)),
                         _ => panic!()
                     }
                 }
@@ -135,10 +149,6 @@ impl VM
                 Return => {
                     return self.stack_pop();
                 }
-
-
-
-
 
                 _ => panic!("unknown instruction in eval: {:?}", insn)
             }
@@ -154,6 +164,7 @@ mod tests
 {
     use super::*;
     use crate::parser::*;
+    use Value::*;
 
     fn eval_src(src: &str) -> Value
     {
@@ -167,16 +178,22 @@ mod tests
     #[test]
     fn test_eval()
     {
-        assert_eq!(eval_src(""), Value::Nil);
-        assert_eq!(eval_src("1;"), Value::Nil);
-        assert_eq!(eval_src("return 7;"), Value::Int(7));
-        assert_eq!(eval_src("return 1 + 7;"), Value::Int(8));
-        assert_eq!(eval_src("return 1 + 2 + 3;"), Value::Int(6));
-        assert_eq!(eval_src("return 1 + 2 * 3;"), Value::Int(7));
-        assert_eq!(eval_src("return 1 + 2 + 3 + 4;"), Value::Int(10));
-        assert_eq!(eval_src("return 1 * 2 + 3 * 4;"), Value::Int(14));
-        assert_eq!(eval_src("return (1 + 2) * 3;"), Value::Int(9));
-        assert_eq!(eval_src("return (1 * 2) + (3 * 4);"), Value::Int(14));
-        assert_eq!(eval_src("return 1 + 2 * 3 + 4;"), Value::Int(11));
+        assert_eq!(eval_src(""), Nil);
+        assert_eq!(eval_src("1;"), Nil);
+        assert_eq!(eval_src("return 7;"), Int64(7));
+        assert_eq!(eval_src("return 1 + 7;"), Int64(8));
+        assert_eq!(eval_src("return 1 + 2 + 3;"), Int64(6));
+
+        // Priority of operations
+        assert_eq!(eval_src("return 1 + 2 * 3;"), Int64(7));
+        assert_eq!(eval_src("return 1 + 2 + 3 + 4;"), Int64(10));
+        assert_eq!(eval_src("return 1 * 2 + 3 * 4;"), Int64(14));
+        assert_eq!(eval_src("return (1 + 2) * 3;"), Int64(9));
+        assert_eq!(eval_src("return (1 * 2) + (3 * 4);"), Int64(14));
+        assert_eq!(eval_src("return 1 + 2 * 3 + 4;"), Int64(11));
+
+        // Subtract and operand ordering
+        assert_eq!(eval_src("return 5 - 3;"), Int64(2));
+        assert_eq!(eval_src("return 5 + 2 - 3;"), Int64(4));
     }
 }

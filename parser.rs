@@ -243,7 +243,7 @@ fn parse_atom(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
     // Decimal integer literal
     if ch.is_digit(10) {
         let int_val = input.parse_int();
-        fun.insns.push(Insn::Push { val: Value::Int(int_val) });
+        fun.insns.push(Insn::Push { val: Value::Int64(int_val) });
         return Ok(());
     }
 
@@ -295,9 +295,10 @@ fn match_bin_op(input: &mut Input) -> Option<OpInfo>
 fn emit_op(op: &str, fun: &mut Function)
 {
     match op {
-        "*" => fun.insns.push(Insn::MulI64),
-        "+" => fun.insns.push(Insn::AddI64),
-        "-" => fun.insns.push(Insn::SubI64),
+        "*" => fun.insns.push(Insn::Mul),
+        "+" => fun.insns.push(Insn::Add),
+        "-" => fun.insns.push(Insn::Sub),
+        "==" => fun.insns.push(Insn::Eq),
         _ => panic!()
     }
 }

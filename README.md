@@ -1,12 +1,14 @@
 # Plush
 
-Minimalistic, dynamically-typed toy programming language for fun/didactic/tutorial purposes. Implemented in Rust.
-The source code is intentionally kept simple and minimalistic, and is well-commented.
+Simple, dynamically-typed toy programming language for fun/didactic/tutorial purposes.
+Implemented in Rust. The codebase is intentionally kept small, easy to read and is well-commented.
 
 Features:
 - Syntax inspired by JS and C
+- Simple and minimalistic by design
 - Top down recursive descent parser
-- Plush code is parsed into bytecode directly, without an AST
+- Source code is parsed into bytecode directly, without building an AST
+- Token-threaded, stack-based bytecode interpreter
 
 ## Installation
 

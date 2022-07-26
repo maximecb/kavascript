@@ -141,21 +141,77 @@ of member read, you'll push a member write. Maybe we can defer or rewrite the la
 insn? We could even check that the last bytecode insn made sense.
 We should also make this check.
 
-TODO: implement let decls
-
-TODO: rename Value::Int to Int64
-
 -----------------------------------------------------------------------------
 
 TODO: you should add a call stack and have pc be a usize.
 - call_stack: Vec<&'static Function> ?
   - that's not super safe either!
 
-TODO: implement and test sub
+How do we want to handle global variables?
+In theory, they can just be at the lowest scope level.
+We could give them mutable cells if they are captured.
+We could also enact the mutable vs immutable distinction,
+which would probably simplify a lot of things.
+Then we immediately know what's mutable or not.
+
+TODO: implement let decls
+
+TODO: implement basic Scope struct
+- Needs a hash map to look up variables in this scope
+- Also needs to know the max local idx?
 
 
 
 
+
+
+
+
+[DONE] TODO: think, do we want scoping for let decls?
+    That would imply we dynamically push a scope in each block
+    New variables in the block get a new local idx
+    The problem is if a closure gets created in the block...
+    It can make that variable long-lived. The host function could
+    pop that frame.
+
+    We can simplify that by making captured variables use closure
+    cells, but that could be annoying to do with our direct to bytecode parsing.
+
+    Scoping does make the language more complex.
+    It means we need a stack of hash maps
+    For each block, we push a new scope with local indices
+    It also makes some intuitive sense though. Makes for more disciplined programming.
+
+    If we have just one local scope per function, then we just have one local_map
+    If a variable gets captured, in theory, we could just replace all uses with a deref
+    of a mutable cell
+
+    With multiple scopes, you can do the same thing, but you need to keep track of
+    the uses separately.
+
+    Since functions are mutable, we could have a simple push_scope method
+    Caveat that scopes are only used during parsing.
+
+    Alternatively, we add a num_locals variable to Function
+    And we create a separate Scope or Decls struct that only
+    lives during parsing.
+
+    One problem with mutable cells is that in theory, you should be
+    creating them right at the let.
+    I suppose one easy way to handle this is to have a setlocal insn
+    Then we can replace that insn with a make_local_cell insn
+
+[DONE] TODO: implement and test sub
+- make sure arg order is correct
+
+[DONE] TODO: we should rename AddI64 to just Add, etc.
+- For a demo minimalistic language demo, KISS, no runtime calls
+
+[DONE] TODO: rename Value::Int to Int64
+
+[DONE] TODO: call should have an argc: usize value
+
+[DONE] TODO: explain in readme, design intentionally kept minimalistic and easily readable
 
 [DONE] FIXME: multiplication priority test failing
 
