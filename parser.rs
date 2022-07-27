@@ -129,7 +129,7 @@ impl Input
             let ch = self.peek_ch();
 
             // Consume whitespace characters
-            if ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n'
+            if ch.is_ascii_whitespace()
             {
                 self.eat_ch();
                 continue;
@@ -247,7 +247,7 @@ impl Input
 
             let ch = self.peek_ch();
 
-            if ch != '_' && !ch.is_alphanumeric() {
+            if ch != '_' && !ch.is_ascii_alphanumeric() {
                 break;
             }
 
@@ -275,9 +275,12 @@ struct Scope
 
 impl Scope
 {
-    fn new() -> Scope
+    fn new(fun: &mut Function) -> Scope
     {
-        todo!();
+        Scope {
+            vars: HashMap::default(),
+            fun: fun as *mut Function
+        }
     }
 
     // Declare a new variable
@@ -320,7 +323,7 @@ fn parse_atom(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
     }
 
     // Variable reference
-    if ch == '_' || ch.is_alphanumeric() {
+    if ch == '_' || ch.is_ascii_alphanumeric() {
         todo!()
     }
 
@@ -473,8 +476,7 @@ fn parse_fun(input: &mut Input) -> Result<Function, ParseError>
 pub fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
 {
     let mut unit_fun = Function::new(&input.src_name);
-
-    let mut scope = Scope::new();
+    let mut scope = Scope::new(&mut unit_fun);
 
     loop
     {
