@@ -156,16 +156,46 @@ Then we immediately know what's mutable or not.
 
 TODO: implement let decls
 
-TODO: implement basic Scope struct
+
+
+
+
+
+
+[DONE] TODO: implement basic scope for global unit function
+- Maybe we could start with just one Scope object and
+  no way to extend it just yet. KISS.
+
+[DONE] TODO: implement Input.parse_ident()
+
+[DONE] TODO: think about basic Scope struct
 - Needs a hash map to look up variables in this scope
 - Also needs to know the max local idx?
+- Technically, we could copy all the data from the parent scope
 
+One problem is that if a variable gets captured, we need to pass it
+along when creating the closure.
+This is maybe not as complicated as it sounds though, because you parse
+the closure body before you create the closure.
 
+This is complicated and it does take away from the fun of this project to some extent.
 
+For now though, there's just one scope.
 
+If I'm in some function and I capture a global, then...?
+- I find out through the scope lookup that this function comes from a parent
+- I need to mark the function I'm in as capturing a variable
+  - And possibly every other function along the way
+- Once the function is parsed, we'll pass along the captured variable when
+  creating a closure
+  - This happens recursively
+- The original declaration of the variable needs to change
 
+Maybe for a toy language it's best not to have closures or nested functions?
+We can definitely start without this.
+We can mark the toplevel function as being the unit function.
 
-
+Right now I'm mostly curious to know if I can parse assignments correctly.
 
 [DONE] TODO: think, do we want scoping for let decls?
     That would imply we dynamically push a scope in each block

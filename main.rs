@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 #![allow(unused_parens)]
+#![allow(unused_mut)]
 
 use std::env;
 

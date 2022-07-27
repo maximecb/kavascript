@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io;
 use std::io::Read;
@@ -232,6 +233,69 @@ impl Input
 
         return Ok(out);
     }
+
+    /// Parse a C-style alphanumeric identifier
+    pub fn parse_ident(&mut self) -> String
+    {
+        let mut ident = String::new();
+
+        loop
+        {
+            if self.eof() {
+                break;
+            }
+
+            let ch = self.peek_ch();
+
+            if ch != '_' && !ch.is_alphanumeric() {
+                break;
+            }
+
+            ident.push(ch);
+            self.eat_ch();
+        }
+
+        return ident;
+    }
+}
+
+
+
+
+
+
+struct Scope
+{
+    /// Map of variables to local indices
+    vars: HashMap<String, usize>,
+
+    /// Function this scope resides in
+    fun: *mut Function,
+}
+
+impl Scope
+{
+    fn new() -> Scope
+    {
+        todo!();
+    }
+
+    // Declare a new variable
+    fn decl_var(&mut self, ident: &str)
+    {
+        assert!(self.vars.get(ident).is_none());
+        let local_idx = self.vars.len();
+        self.vars.insert(ident.to_string(), local_idx);
+    }
+
+    // Look up a variable by name
+    fn lookup(&self, ident: &str) -> Option<usize>
+    {
+        match self.vars.get(ident) {
+            Some(idx) => Some(*idx),
+            None => None,
+        }
+    }
 }
 
 /// Parse an atomic expression
@@ -372,6 +436,27 @@ fn parse_stmt(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
         return Ok(());
     }
 
+    // Variable declaration
+    if input.match_token("let") {
+        let ident = input.parse_ident();
+        input.expect_token("=")?;
+        parse_expr(input, fun)?;
+        input.expect_token(";")?;
+
+
+
+
+
+        //fun.insns.push(Insn::SetLocal{ idx: local_idx });
+
+
+
+        return Ok(());
+    }
+
+
+
+
     // Try to parse this as an expression statement
     parse_expr(input, fun)?;
     fun.insns.push(Insn::Pop);
@@ -388,6 +473,8 @@ fn parse_fun(input: &mut Input) -> Result<Function, ParseError>
 pub fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
 {
     let mut unit_fun = Function::new(&input.src_name);
+
+    let mut scope = Scope::new();
 
     loop
     {
