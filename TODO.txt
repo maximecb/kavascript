@@ -154,13 +154,15 @@ We could also enact the mutable vs immutable distinction,
 which would probably simplify a lot of things.
 Then we immediately know what's mutable or not.
 
-TODO: implement let decls
+TODO: add eval tests for variable refs
 
 
 
 
 
+[DONE] TODO: implement variable refs
 
+[DONE] TODO: implement let decls
 
 [DONE] TODO: implement basic scope for global unit function
 - Maybe we could start with just one Scope object and

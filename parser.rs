@@ -259,11 +259,6 @@ impl Input
     }
 }
 
-
-
-
-
-
 struct Scope
 {
     /// Map of variables to local indices
@@ -284,11 +279,12 @@ impl Scope
     }
 
     // Declare a new variable
-    fn decl_var(&mut self, ident: &str)
+    fn decl_var(&mut self, ident: &str) -> usize
     {
         assert!(self.vars.get(ident).is_none());
         let local_idx = self.vars.len();
         self.vars.insert(ident.to_string(), local_idx);
+        return local_idx;
     }
 
     // Look up a variable by name
@@ -302,7 +298,7 @@ impl Scope
 }
 
 /// Parse an atomic expression
-fn parse_atom(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
+fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Result<(), ParseError>
 {
     input.eat_ws();
     let ch = input.peek_ch();
@@ -317,14 +313,23 @@ fn parse_atom(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
     // Parenthesized expression
     if ch == '(' {
         input.eat_ch();
-        parse_expr(input, fun)?;
+        parse_expr(input, fun, scope)?;
         input.expect_token(")")?;
         return Ok(());
     }
 
     // Variable reference
     if ch == '_' || ch.is_ascii_alphanumeric() {
-        todo!()
+        let ident = input.parse_ident();
+
+        let local_idx = scope.lookup(&ident);
+
+        if local_idx.is_none() {
+            return input.parse_error(&format!("undeclared variable {}", ident));
+        }
+
+        fun.insns.push(Insn::GetLocal{ idx: local_idx.unwrap() });
+        return Ok(());
     }
 
     input.parse_error("unknown atomic expression")
@@ -373,13 +378,13 @@ fn emit_op(op: &str, fun: &mut Function)
 /// Parse a complex expression
 /// This uses the shunting yard algorithm to parse infix expressions:
 /// https://en.wikipedia.org/wiki/Shunting_yard_algorithm
-fn parse_expr(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
+fn parse_expr(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Result<(), ParseError>
 {
     // Operator stack
     let mut op_stack: Vec<OpInfo> = Vec::default();
 
     // Parse the first atomic expression
-    parse_atom(input, fun)?;
+    parse_atom(input, fun, scope)?;
 
     loop
     {
@@ -416,7 +421,7 @@ fn parse_expr(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
         op_stack.push(new_op);
 
         // There must be another expression following
-        parse_atom(input, fun)?;
+        parse_atom(input, fun, scope)?;
     }
 
     // Emit all operators remaining on the operator stack
@@ -430,10 +435,10 @@ fn parse_expr(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
 }
 
 /// Parse a statement
-fn parse_stmt(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
+fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Result<(), ParseError>
 {
     if input.match_token("return") {
-        parse_expr(input, fun)?;
+        parse_expr(input, fun, scope)?;
         fun.insns.push(Insn::Return);
         input.expect_token(";")?;
         return Ok(());
@@ -441,27 +446,23 @@ fn parse_stmt(input: &mut Input, fun: &mut Function) -> Result<(), ParseError>
 
     // Variable declaration
     if input.match_token("let") {
+        input.eat_ws();
         let ident = input.parse_ident();
         input.expect_token("=")?;
-        parse_expr(input, fun)?;
+        parse_expr(input, fun, scope)?;
         input.expect_token(";")?;
 
+        if scope.lookup(&ident).is_some() {
+            return input.parse_error(&format!("undeclared variable {}", ident));
+        }
 
-
-
-
-        //fun.insns.push(Insn::SetLocal{ idx: local_idx });
-
-
-
+        let local_idx = scope.decl_var(&ident);
+        fun.insns.push(Insn::SetLocal{ idx: local_idx });
         return Ok(());
     }
 
-
-
-
     // Try to parse this as an expression statement
-    parse_expr(input, fun)?;
+    parse_expr(input, fun, scope)?;
     fun.insns.push(Insn::Pop);
     input.expect_token(";")
 }
@@ -486,7 +487,7 @@ pub fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
             break;
         }
 
-        parse_stmt(input, &mut unit_fun)?;
+        parse_stmt(input, &mut unit_fun, &mut scope)?;
 
         // TODO: detect function keyword
     }
@@ -563,5 +564,12 @@ mod tests
 
         // Should not parse
         assert!(parse_unit(&mut Input::new("1 + 2 +;", "src")).is_err());
+    }
+
+    #[test]
+    fn stmts()
+    {
+        parse_unit(&mut Input::new("let x = 3;", "src")).unwrap();
+        parse_unit(&mut Input::new("let x = 3; let y = 5;", "src")).unwrap();
     }
 }
