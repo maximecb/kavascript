@@ -154,22 +154,34 @@ We could also enact the mutable vs immutable distinction,
 which would probably simplify a lot of things.
 Then we immediately know what's mutable or not.
 
+In order for closures to work, we kind of need a system of
+variable resolution. This seems difficult to do with direct
+to bytecode parsing.
+
+Ideally, we'd do the resolution with a vec of scopes, or
+something.
+
+TODO: implement return, check return address
+
+TODO: think more about nested function resolution
+
+TODO: think more about locals vs captured cells
+
+commit
+
 TODO: add eval tests for variable refs
 
-TODO: implement SetLocal and GetLocal in the VM
+
+
+
+
+[DONE] TODO: implement SetLocal and GetLocal in the VM
 - for this, we should have a frame pointer?
   - seems like we definitely need a call stack of functions?
 
-TODO: implement a frame pointer?
+[DONE] TODO: implement a frame pointer
 - the current fp can be the previous sp, as on arm
-- the fp will just be an index into the stack
-
-
-
-
-
-
-
+  - the fp will just be an index into the stack
 
 [DONE] TODO: need to increment num_locals when declaring a variable
 

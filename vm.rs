@@ -137,6 +137,16 @@ impl VM
                     self.stack.pop();
                 }
 
+                SetLocal{ idx } => {
+                    let val = self.stack_pop();
+                    self.stack[self.fp + idx] = val.clone();
+                }
+
+                GetLocal{ idx } => {
+                    let val = self.stack[self.fp + idx].clone();
+                    self.stack.push(val);
+                }
+
                 Add => {
                     let v1 = self.stack_pop();
                     let v0 = self.stack_pop();
@@ -222,6 +232,8 @@ mod tests
     #[test]
     fn test_let_stmt()
     {
-        //assert_eq!(eval_src("let x = 3; return x;"), Int64(2));
+        eval_src("let x = 3;");
+        assert_eq!(eval_src("let x = 2; return x;"), Int64(2));
+        assert_eq!(eval_src("let x = 2; let y = 3; return x + y;"), Int64(5));
     }
 }
