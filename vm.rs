@@ -4,6 +4,7 @@ use std::collections::HashMap;
 pub enum Value
 {
     Int64(i64),
+    UInt64(u64),
     Str(String),
     Nil,
 }
@@ -70,9 +71,14 @@ impl Function
 
 pub struct VM
 {
+    /// Value stack
     stack: Vec<Value>,
 
+    /// Program counter / instruction pointer
     pc: *const Insn,
+
+    /// Frame pointer (index of the bottom of the frame)
+    fp: usize,
 }
 
 impl VM
@@ -82,6 +88,7 @@ impl VM
         Self {
             stack: Vec::default(),
             pc: 0 as *const Insn,
+            fp: 0,
         }
     }
 
@@ -95,17 +102,28 @@ impl VM
         self.stack.pop().expect("stack empty")
     }
 
-    pub fn eval(&mut self, unit: &Function) -> Value
+    pub fn eval(&mut self, fun: &Function) -> Value
     {
         use Insn::*;
         use Value::*;
 
-        self.pc = &unit.insns[0] as *const Insn;
+        // Push the return address
+        self.stack.push(Nil);
+
+        // Push the previous frame pointer
+        self.stack.push(Value::UInt64(self.fp as u64));
+
+        // Set the frame pointer
+        self.fp = self.stack.len();
+
+        // Push space for all the locals
+        self.stack.resize(self.stack.len() + fun.num_locals, Value::Nil);
+
+        // Set the instruction pointer
+        self.pc = &fun.insns[0] as *const Insn;
 
         loop
         {
-            //let insn = *self.pc as &Insn;
-
             let insn = unsafe { &*self.pc };
 
             match insn {
@@ -183,7 +201,11 @@ mod tests
         assert_eq!(eval_src("return 7;"), Int64(7));
         assert_eq!(eval_src("return 1 + 7;"), Int64(8));
         assert_eq!(eval_src("return 1 + 2 + 3;"), Int64(6));
+    }
 
+    #[test]
+    fn test_infix_priority()
+    {
         // Priority of operations
         assert_eq!(eval_src("return 1 + 2 * 3;"), Int64(7));
         assert_eq!(eval_src("return 1 + 2 + 3 + 4;"), Int64(10));
@@ -195,5 +217,11 @@ mod tests
         // Subtract and operand ordering
         assert_eq!(eval_src("return 5 - 3;"), Int64(2));
         assert_eq!(eval_src("return 5 + 2 - 3;"), Int64(4));
+    }
+
+    #[test]
+    fn test_let_stmt()
+    {
+        //assert_eq!(eval_src("let x = 3; return x;"), Int64(2));
     }
 }

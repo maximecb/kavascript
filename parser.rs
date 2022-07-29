@@ -284,6 +284,10 @@ impl Scope
         assert!(self.vars.get(ident).is_none());
         let local_idx = self.vars.len();
         self.vars.insert(ident.to_string(), local_idx);
+
+        let mut fun = unsafe { &mut *self.fun };
+        fun.num_locals += 1;
+
         return local_idx;
     }
 
@@ -496,6 +500,7 @@ pub fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
     unit_fun.insns.push(Insn::Push { val: Value::Nil });
     unit_fun.insns.push(Insn::Return);
 
+    //dbg!(unit_fun.num_locals);
     //dbg!(&unit_fun.insns);
 
     Ok(unit_fun)

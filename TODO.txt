@@ -156,9 +156,22 @@ Then we immediately know what's mutable or not.
 
 TODO: add eval tests for variable refs
 
+TODO: implement SetLocal and GetLocal in the VM
+- for this, we should have a frame pointer?
+  - seems like we definitely need a call stack of functions?
+
+TODO: implement a frame pointer?
+- the current fp can be the previous sp, as on arm
+- the fp will just be an index into the stack
 
 
 
+
+
+
+
+
+[DONE] TODO: need to increment num_locals when declaring a variable
 
 [DONE] TODO: implement variable refs
 
