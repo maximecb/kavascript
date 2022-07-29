@@ -176,14 +176,18 @@ TODO: support for parsing global function declarations
   - this would be the most flexible solution
 - let x = fun
 
-TODO: support for block statements and nested scopes
-
+TODO: implement print function
+- we could manually resolve it for now?
 TODO: implement assert statement
 
+TODO: test nested scopes
+
+TODO: create nested scope, new_nested() for block statement
 
 
 
 
+[DONE] TODO: parse block statements
 
 [DONE] TODO: parse_file function
 

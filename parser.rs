@@ -453,6 +453,8 @@ fn parse_expr(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
 /// Parse a statement
 fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Result<(), ParseError>
 {
+    input.eat_ws();
+
     if input.match_token("return") {
         parse_expr(input, fun, scope)?;
         fun.insns.push(Insn::Return);
@@ -474,6 +476,31 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
 
         let local_idx = scope.decl_var(&ident);
         fun.insns.push(Insn::SetLocal{ idx: local_idx });
+        return Ok(());
+    }
+
+    // Block statement
+    if input.match_token("{") {
+
+        // TODO
+        // TODO: eventually, create a nested scope
+        // TODO
+
+        loop
+        {
+            input.eat_ws();
+
+            if input.eof() {
+                return input.parse_error("unexpected end of input in block statement");
+            }
+
+            if input.match_token("}") {
+                break;
+            }
+
+            parse_stmt(input, fun, scope)?;
+        }
+
         return Ok(());
     }
 
@@ -595,5 +622,6 @@ mod tests
     {
         parse_unit(&mut Input::new("let x = 3;", "src")).unwrap();
         parse_unit(&mut Input::new("let x = 3; let y = 5;", "src")).unwrap();
+        parse_unit(&mut Input::new("{ let x = 3; x; } let y = 4;", "src")).unwrap();
     }
 }

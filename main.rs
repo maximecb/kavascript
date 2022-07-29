@@ -20,6 +20,8 @@ fn main()
     // If an input file was specified
     if args.len() == 2 {
         let unit_fn = parse_file(&args[1]);
+        let mut vm = VM::new();
+
 
 
     }
