@@ -17,17 +17,10 @@ fn main()
     let args: Vec<String> = env::args().collect();
     println!("{:?}", args);
 
+    // If an input file was specified
+    if args.len() == 2 {
+        let unit_fn = parse_file(&args[1]);
 
 
-
-
-
-
-
-
-
-
-
-
-
+    }
 }

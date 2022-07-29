@@ -10,6 +10,9 @@ Features:
 - Source code is parsed into bytecode directly, without building an AST
 - Token-threaded, stack-based bytecode interpreter
 
+Limitations:
+- This language has no GC and everything is passed by value
+
 ## Installation
 
 Clone this repository:

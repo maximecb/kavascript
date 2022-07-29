@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::fs::File;
+use std::fs;
 use std::io;
 use std::io::Read;
 use std::fmt;
@@ -332,7 +332,19 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
             return input.parse_error(&format!("undeclared variable {}", ident));
         }
 
-        fun.insns.push(Insn::GetLocal{ idx: local_idx.unwrap() });
+        // If this is actually an assignment
+        if input.match_token("=") {
+            // Parse the expression to assign
+            parse_expr(input, fun, scope)?;
+
+            fun.insns.push(Insn::Dup);
+            fun.insns.push(Insn::SetLocal{ idx: local_idx.unwrap() });
+        }
+        else
+        {
+            fun.insns.push(Insn::GetLocal{ idx: local_idx.unwrap() });
+        }
+
         return Ok(());
     }
 
@@ -506,8 +518,15 @@ pub fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
     Ok(unit_fun)
 }
 
-// TODO:
-// parse_file
+pub fn parse_file(file_name: &str) -> Function
+{
+    let data = fs::read_to_string(file_name)
+        .expect(&format!("could not read input file {}", file_name));
+
+    let mut input = Input::new(&data, file_name);
+
+    parse_unit(&mut input).unwrap()
+}
 
 #[cfg(test)]
 mod tests
