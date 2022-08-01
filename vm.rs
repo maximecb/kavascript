@@ -1,11 +1,14 @@
 use std::collections::HashMap;
 
+type HostFn = fn(args: *const Value) -> Value;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value
 {
     Int64(i64),
     UInt64(u64),
     Str(String),
+    HostFn(HostFn),
     Nil,
 }
 
