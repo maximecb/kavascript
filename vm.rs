@@ -250,13 +250,9 @@ mod tests
         assert_eq!(eval_src("let x = 1; let y = 1; x = y = 3; return x+y;"), Int64(6));
         assert_eq!(eval_src("let x = 1; let y = 1; x = y = x + 3; return x+y;"), Int64(8));
 
-
-
-
+        // Nested scopes
+        assert_eq!(eval_src("let x = 2; { return x; }"), Int64(2));
+        assert_eq!(eval_src("let x = 2; { let x = 3; return x; }"), Int64(3));
+        assert_eq!(eval_src("let x = 2; { let x = 3; x; } return x; "), Int64(2));
     }
-
-
-
-
-
 }

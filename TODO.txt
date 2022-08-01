@@ -178,14 +178,23 @@ TODO: support for parsing global function declarations
 
 TODO: implement print function
 - we could manually resolve it for now?
-TODO: implement assert statement
 
-TODO: test nested scopes
+TODO: implement assert statement parsing
 
-TODO: create nested scope, new_nested() for block statement
-
+TODO: implement IfFalse insn, for assert
 
 
+
+
+
+[DONE] TODO: test nested scopes
+
+[DONE] TODO: implement recursive decl for nested scopes
+- need to keep track of max_idx seen per scope level?
+
+[DONE] TODO: implement recursive lookup for nested scope
+
+[DONE] TODO: create nested scope, new_nested() for block statement
 
 [DONE] TODO: parse block statements
 

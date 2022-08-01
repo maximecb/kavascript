@@ -3,6 +3,7 @@ use std::fs;
 use std::io;
 use std::io::Read;
 use std::fmt;
+use std::cmp::max;
 use crate::vm::*;
 
 #[derive(Debug)]
@@ -266,6 +267,12 @@ struct Scope
 
     /// Function this scope resides in
     fun: *mut Function,
+
+    /// Parent scope
+    parent: Option<*mut Scope>,
+
+    /// Next local idx to assign
+    next_idx: usize,
 }
 
 impl Scope
@@ -274,29 +281,60 @@ impl Scope
     {
         Scope {
             vars: HashMap::default(),
-            fun: fun as *mut Function
+            fun: fun as *mut Function,
+            parent: None,
+            next_idx: 0,
         }
     }
 
-    // Declare a new variable
-    fn decl_var(&mut self, ident: &str) -> usize
+    /// Create a new nested scope
+    fn new_nested(parent: &mut Scope) -> Scope
     {
-        assert!(self.vars.get(ident).is_none());
-        let local_idx = self.vars.len();
+        Scope {
+            vars: HashMap::default(),
+            fun: parent.fun,
+            parent: Some(parent as *mut Scope),
+            next_idx: parent.next_idx,
+        }
+    }
+
+    /// Declare a new variable
+    fn decl_var(&mut self, ident: &str) -> Option<usize>
+    {
+        // Can't declare a variable twice in the same scope
+        if let Some(local_idx) = self.vars.get(ident) {
+            return None;
+        }
+
+        let local_idx = self.next_idx;
+        self.next_idx += 1;
+
         self.vars.insert(ident.to_string(), local_idx);
 
         let mut fun = unsafe { &mut *self.fun };
-        fun.num_locals += 1;
+        fun.num_locals = max(fun.num_locals, local_idx + 1);
 
-        return local_idx;
+        return Some(local_idx);
     }
 
-    // Look up a variable by name
+    /// Look up a variable by name
     fn lookup(&self, ident: &str) -> Option<usize>
     {
-        match self.vars.get(ident) {
-            Some(idx) => Some(*idx),
-            None => None,
+        if let Some(idx) = self.vars.get(ident) {
+            println!("found {} in scope", ident);
+
+            return Some(*idx);
+        }
+        else
+        {
+            if let Some(parent_ptr) = self.parent {
+                let parent = unsafe { &*parent_ptr };
+                return parent.lookup(ident);
+            }
+            else
+            {
+                return None;
+            }
         }
     }
 }
@@ -470,21 +508,21 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         parse_expr(input, fun, scope)?;
         input.expect_token(";")?;
 
-        if scope.lookup(&ident).is_some() {
-            return input.parse_error(&format!("undeclared variable {}", ident));
+        if let Some(local_idx) = scope.decl_var(&ident) {
+            fun.insns.push(Insn::SetLocal{ idx: local_idx });
+            return Ok(());
         }
-
-        let local_idx = scope.decl_var(&ident);
-        fun.insns.push(Insn::SetLocal{ idx: local_idx });
-        return Ok(());
+        else
+        {
+            return input.parse_error(&format!("variable {} already declared", ident));
+        }
     }
 
     // Block statement
     if input.match_token("{") {
 
-        // TODO
-        // TODO: eventually, create a nested scope
-        // TODO
+        // Create a nested scope for the block
+        let mut scope = Scope::new_nested(scope);
 
         loop
         {
@@ -498,7 +536,7 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
                 break;
             }
 
-            parse_stmt(input, fun, scope)?;
+            parse_stmt(input, fun, &mut scope)?;
         }
 
         return Ok(());
