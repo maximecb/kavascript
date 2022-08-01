@@ -544,6 +544,18 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         return Ok(());
     }
 
+    // Assert statement
+    if input.match_token("assert") {
+        parse_expr(input, fun, scope)?;
+        input.expect_token(";")?;
+
+        // If the expression is true, don't panic
+        fun.insns.push(Insn::IfTrue { offset: 1 });
+        fun.insns.push(Insn::Panic);
+
+        return Ok(());
+    }
+
     // Try to parse this as an expression statement
     parse_expr(input, fun, scope)?;
     fun.insns.push(Insn::Pop);

@@ -179,14 +179,20 @@ TODO: support for parsing global function declarations
 TODO: implement print function
 - we could manually resolve it for now?
 
-TODO: implement assert statement parsing
+FIXME: we need a match_keyword
+- otherwise, we can match things like assertx; or letxy=2;
+- need to add some tests for this
+=> shortcut to test things that shouldn't parse?
 
-TODO: implement Eq for assert and ==
+TODO: implement execution from main.rs
 
 
 
 
 
+[DONE] TODO: implement assert statement parsing
+
+[DONE] TODO: implement Eq for assert and ==
 
 [DONE] TODO: implement IfFalse insn, for assert
 

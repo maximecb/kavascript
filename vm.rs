@@ -127,6 +127,8 @@ impl VM
             let insn = unsafe { &*self.pc };
 
             match insn {
+                Panic => panic!("panic"),
+
                 Halt => return Value::Nil,
 
                 Push { val } => {
@@ -176,6 +178,28 @@ impl VM
                     let v0 = self.stack_pop();
                     match (v0, v1) {
                         (Int64(v0), Int64(v1)) => self.stack.push(Int64(v0 * v1)),
+                        _ => panic!()
+                    }
+                }
+
+                Eq => {
+                    let v1 = self.stack_pop();
+                    let v0 = self.stack_pop();
+                    let b = match (v0, v1) {
+                        (Int64(v0), Int64(v1)) => if v0 == v1 { 1 } else { 0 },
+                        _ => panic!()
+                    };
+                    self.stack.push(Int64(b));
+                }
+
+                IfTrue{ offset } => {
+                    let v = self.stack_pop();
+                    match v {
+                        Int64(v) => {
+                            if v != 0 {
+                                self.pc = unsafe { self.pc.offset(*offset as isize) }
+                            }
+                        }
                         _ => panic!()
                     }
                 }
@@ -266,5 +290,11 @@ mod tests
         assert_eq!(eval_src("let x = 2; { return x; }"), Int64(2));
         assert_eq!(eval_src("let x = 2; { let x = 3; return x; }"), Int64(3));
         assert_eq!(eval_src("let x = 2; { let x = 3; x; } return x; "), Int64(2));
+    }
+
+    #[test]
+    fn test_assert()
+    {
+        eval_src("assert 3;");
     }
 }
