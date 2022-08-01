@@ -633,6 +633,12 @@ pub fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
     Ok(unit_fun)
 }
 
+pub fn parse_str(src: &str) -> Function
+{
+    let mut input = Input::new(&src, "src");
+    parse_unit(&mut input).unwrap()
+}
+
 pub fn parse_file(file_name: &str) -> Function
 {
     let data = fs::read_to_string(file_name)
@@ -647,6 +653,12 @@ pub fn parse_file(file_name: &str) -> Function
 mod tests
 {
     use super::*;
+
+    fn parse_fails(src: &str)
+    {
+        let mut input = Input::new(&src, "src");
+        assert!(parse_unit(&mut input).is_err());
+    }
 
     #[test]
     fn int_token_int()
@@ -685,31 +697,43 @@ mod tests
     #[test]
     fn simple_unit()
     {
-        parse_unit(&mut Input::new("", "src")).unwrap();
-        parse_unit(&mut Input::new(" ", "src")).unwrap();
-        parse_unit(&mut Input::new("1;", "src")).unwrap();
-        parse_unit(&mut Input::new("1; ", "src")).unwrap();
+        parse_str("");
+        parse_str(" ");
+        parse_str("1;");
+        parse_str("1; ");
     }
 
     #[test]
     fn infix_exprs()
     {
         // Should parse
-        parse_unit(&mut Input::new("1 + 2;", "src")).unwrap();
-        parse_unit(&mut Input::new("1 + 2 * 3;", "src")).unwrap();
-        parse_unit(&mut Input::new("1 + 2 + 3;", "src")).unwrap();
-        parse_unit(&mut Input::new("1 + 2 + 3 + 4;", "src")).unwrap();
-        parse_unit(&mut Input::new("(1) + 2 + 3 * 4;", "src")).unwrap();
+        parse_str("1 + 2;");
+        parse_str("1 + 2 * 3;");
+        parse_str("1 + 2 + 3;");
+        parse_str("1 + 2 + 3 + 4;");
+        parse_str("(1) + 2 + 3 * 4;");
 
         // Should not parse
-        assert!(parse_unit(&mut Input::new("1 + 2 +;", "src")).is_err());
+        parse_fails("1 + 2 +;");
     }
 
     #[test]
     fn stmts()
     {
-        parse_unit(&mut Input::new("let x = 3;", "src")).unwrap();
-        parse_unit(&mut Input::new("let x = 3; let y = 5;", "src")).unwrap();
-        parse_unit(&mut Input::new("{ let x = 3; x; } let y = 4;", "src")).unwrap();
+        parse_str("let x = 3;");
+        parse_str("let x = 3; let y = 5;");
+        parse_str("{ let x = 3; x; } let y = 4;");
+    }
+
+    #[test]
+    fn call_expr()
+    {
+        parse_str("1();");
+        parse_str("1(0);");
+        parse_str("1(0,);");
+        parse_str("1(0,1);");
+        parse_str("1( 0 , 1 , 2 );");
+        parse_str("0 + 1(0,1,2) + 3;");
+        parse_str("let x = 1(0,1,2);");
     }
 }
