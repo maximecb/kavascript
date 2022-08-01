@@ -321,8 +321,6 @@ impl Scope
     fn lookup(&self, ident: &str) -> Option<usize>
     {
         if let Some(idx) = self.vars.get(ident) {
-            println!("found {} in scope", ident);
-
             return Some(*idx);
         }
         else

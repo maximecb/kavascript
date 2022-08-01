@@ -178,17 +178,20 @@ TODO: support for parsing global function declarations
 
 TODO: implement print function
 - we could manually resolve it for now?
+  - just directly match_keyword("print")
+- may want a value type for HostFn
 
 FIXME: we need a match_keyword
 - otherwise, we can match things like assertx; or letxy=2;
 - need to add some tests for this
 => shortcut to test things that shouldn't parse?
 
-TODO: implement execution from main.rs
 
 
 
 
+
+[DONE] TODO: implement execution from main.rs
 
 [DONE] TODO: implement assert statement parsing
 

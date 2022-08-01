@@ -21,8 +21,6 @@ fn main()
     if args.len() == 2 {
         let unit_fn = parse_file(&args[1]);
         let mut vm = VM::new();
-
-
-
+        vm.eval(&unit_fn);
     }
 }
