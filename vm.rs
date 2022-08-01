@@ -180,6 +180,18 @@ impl VM
                     }
                 }
 
+                IfFalse{ offset } => {
+                    let v = self.stack_pop();
+                    match v {
+                        Int64(v) => {
+                            if v == 0 {
+                                self.pc = unsafe { self.pc.offset(*offset as isize) }
+                            }
+                        }
+                        _ => panic!()
+                    }
+                }
+
                 Return => {
                     return self.stack_pop();
                 }

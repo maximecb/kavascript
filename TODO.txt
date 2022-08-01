@@ -181,11 +181,14 @@ TODO: implement print function
 
 TODO: implement assert statement parsing
 
-TODO: implement IfFalse insn, for assert
+TODO: implement Eq for assert and ==
 
 
 
 
+
+
+[DONE] TODO: implement IfFalse insn, for assert
 
 [DONE] TODO: test nested scopes
 
