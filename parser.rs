@@ -387,6 +387,38 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
     input.parse_error("unknown atomic expression")
 }
 
+/// Parse a function call expression
+fn parse_call_expr(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Result<(), ParseError>
+{
+    // Note that the callee expression has already been parsed
+    // when parse_call_expr is called
+
+    loop {
+        input.eat_ws();
+
+        if input.eof() {
+            return input.parse_error("unexpected end of input in call expression");
+        }
+
+        if input.match_token(")") {
+            break;
+        }
+
+        // Parse one argument
+        parse_expr(input, fun, scope)?;
+
+        if input.match_token(")") {
+            break;
+        }
+
+        // If this isn't the last argument, there
+        // has to be a comma separator
+        input.expect_token(",")?;
+    }
+
+    Ok(())
+}
+
 struct OpInfo
 {
     op: &'static str,
@@ -444,6 +476,12 @@ fn parse_expr(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
     {
         if input.eof() {
             break;
+        }
+
+        // If this is a function call
+        if input.match_token("(") {
+            parse_call_expr(input, fun, scope)?;
+            continue;
         }
 
         let new_op = match_bin_op(input);
