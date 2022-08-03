@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-type HostFn = fn(args: *const Value) -> Value;
+pub type HostFn = fn(args: *const Value) -> Value;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value

@@ -12,6 +12,8 @@ use vm::*;
 mod parser;
 use parser::*;
 
+mod runtime;
+
 fn main()
 {
     let args: Vec<String> = env::args().collect();
