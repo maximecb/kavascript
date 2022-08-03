@@ -172,6 +172,39 @@ impl Input
         return self.match_exact(token);
     }
 
+    /// Match a keyword in the input, ignoring preceding whitespace
+    /// This is different from match_token because there can't be
+    /// a match if the following chars are also valid identifier chars
+    pub fn match_keyword(&mut self, keyword: &str) -> bool
+    {
+        self.eat_ws();
+
+        let chars: Vec<char> = keyword.chars().collect();
+        let end_pos = self.pos + chars.len();
+
+        if end_pos > self.input_str.len() {
+            return false;
+        }
+
+        // We can't match as a keyword if the next chars are
+        // valid identifier characters
+        let end_ch = self.input_str[self.pos];
+        if end_ch.is_ascii_alphanumeric() || end_ch == '_' {
+            return false;
+        }
+
+        // If we match the keyword characters
+        if chars == self.input_str[self.pos..end_pos] {
+            for i in 0..chars.len() {
+                self.eat_ch();
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     /// Shortcut for yielding a parse error wrapped in a result type
     pub fn parse_error<T>(&self, msg: &str) -> Result<T, ParseError>
     {
