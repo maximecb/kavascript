@@ -227,7 +227,7 @@ impl Input
             let ch = self.eat_ch();
 
             if ch == '\"' {
-                break
+                break;
             }
 
             out.push(ch);
@@ -348,6 +348,14 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
     if ch.is_digit(10) {
         let int_val = input.parse_int();
         fun.insns.push(Insn::Push { val: Value::Int64(int_val) });
+        return Ok(());
+    }
+
+    // String literal
+    if ch == '\"' {
+        input.eat_ch();
+        let str_val = input.parse_str()?;
+        fun.insns.push(Insn::Push { val: Value::Str(str_val) });
         return Ok(());
     }
 
@@ -726,6 +734,7 @@ mod tests
         parse_str(" ");
         parse_str("1;");
         parse_str("1; ");
+        parse_str(" \"foobar\";");
     }
 
     #[test]
