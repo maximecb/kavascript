@@ -218,6 +218,23 @@ impl VM
                     }
                 }
 
+                Call { argc } => {
+                    // The callee was pushed on the stack first
+                    let callee = &self.stack[self.stack.len() - argc - 1];
+
+                    // The last argument is at the top
+                    // This pointer is invalid if argc is zero
+                    let args = &self.stack[self.stack.len() - argc] as *const Value;
+
+                    match callee {
+                        HostFn(host_fn) => {
+                            let retv = host_fn(args, *argc);
+                            self.stack.push(retv);
+                        }
+                        _ => panic!()
+                    }
+                }
+
                 Return => {
                     return self.stack_pop();
                 }
