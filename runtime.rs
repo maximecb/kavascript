@@ -1,17 +1,29 @@
-use crate::vm::*;
+use crate::vm::Value;
+use Value::*;
 
-fn print(args: *const Value) -> Value
+pub type HostFn = fn(args: *const Value, argc: usize) -> Value;
+
+fn println(args: *const Value, argc: usize) -> Value
 {
-    todo!();
+    for i in 0..argc {
+        let arg = unsafe { &*args.add(i) };
 
+        match arg {
+            Int64(v) => print!("{}", v),
+            Str(s) => print!("{}", s),
+            _ => panic!()
+        }
+    }
 
+    println!();
 
+    Value::Nil
 }
 
-fn get_runtime_fn(name: &str) -> Option<HostFn>
+pub fn get_runtime_fn(name: &str) -> Option<HostFn>
 {
     match name {
-        "print" => Some(print),
+        "println" => Some(println),
         _ => None
     }
 }

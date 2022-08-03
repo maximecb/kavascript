@@ -5,6 +5,7 @@ use std::io::Read;
 use std::fmt;
 use std::cmp::max;
 use crate::vm::*;
+use crate::runtime::get_runtime_fn;
 
 #[derive(Debug)]
 pub struct ParseError
@@ -362,8 +363,18 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
     if ch == '_' || ch.is_ascii_alphanumeric() {
         let ident = input.parse_ident();
 
+        // Check if there is a runtime function with this name
+        let runtime_fn = get_runtime_fn(&ident);
+
+        if runtime_fn.is_some() {
+            let host_fn = Value::HostFn(runtime_fn.unwrap());
+            fun.insns.push(Insn::Push { val: host_fn });
+            return Ok(());
+        }
+
         let local_idx = scope.lookup(&ident);
 
+        // If the variable is not found
         if local_idx.is_none() {
             return input.parse_error(&format!("undeclared variable {}", ident));
         }
@@ -393,6 +404,8 @@ fn parse_call_expr(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> 
     // Note that the callee expression has already been parsed
     // when parse_call_expr is called
 
+    let mut argc = 0;
+
     loop {
         input.eat_ws();
 
@@ -407,6 +420,9 @@ fn parse_call_expr(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> 
         // Parse one argument
         parse_expr(input, fun, scope)?;
 
+        // Increment the argument count
+        argc += 1;
+
         if input.match_token(")") {
             break;
         }
@@ -415,6 +431,8 @@ fn parse_call_expr(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> 
         // has to be a comma separator
         input.expect_token(",")?;
     }
+
+    fun.insns.push(Insn::Call { argc });
 
     Ok(())
 }
@@ -493,8 +511,6 @@ fn parse_expr(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
 
         let new_op = new_op.unwrap();
 
-        //println!("{}", new_op.op);
-
         while op_stack.len() > 0 {
             // Get the operator at the top of the stack
             let top_op = &op_stack[op_stack.len() - 1];
@@ -545,6 +561,15 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         input.expect_token("=")?;
         parse_expr(input, fun, scope)?;
         input.expect_token(";")?;
+
+        // Check if there is a runtime function with this name
+        let runtime_fn = get_runtime_fn(&ident);
+
+        if runtime_fn.is_some() {
+            let host_fn = Value::HostFn(runtime_fn.unwrap());
+            fun.insns.push(Insn::Push { val: host_fn });
+            return input.parse_error(&format!("there is already a runtime function named {}", ident));
+        }
 
         if let Some(local_idx) = scope.decl_var(&ident) {
             fun.insns.push(Insn::SetLocal{ idx: local_idx });
@@ -735,5 +760,15 @@ mod tests
         parse_str("1( 0 , 1 , 2 );");
         parse_str("0 + 1(0,1,2) + 3;");
         parse_str("let x = 1(0,1,2);");
+    }
+
+    #[test]
+    fn runtime_fn()
+    {
+        parse_fails("let println = 3;");
+        parse_fails("println = 3;");
+
+        parse_str("println(1);");
+        parse_str("println(1, 2);");
     }
 }
