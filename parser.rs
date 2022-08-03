@@ -27,10 +27,17 @@ impl ParseError
     }
 }
 
-impl fmt::Display for ParseError {
+impl fmt::Display for ParseError
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "parse error")
     }
+}
+
+/// Function to check if a character can be part of an identifier
+fn is_ident_ch(ch: char) -> bool
+{
+    ch.is_ascii_alphanumeric() || ch == '_'
 }
 
 #[derive(Debug, Clone)]
@@ -188,8 +195,7 @@ impl Input
 
         // We can't match as a keyword if the next chars are
         // valid identifier characters
-        let end_ch = self.input_str[self.pos];
-        if end_ch.is_ascii_alphanumeric() || end_ch == '_' {
+        if is_ident_ch(self.input_str[self.pos]) {
             return false;
         }
 
@@ -282,7 +288,7 @@ impl Input
 
             let ch = self.peek_ch();
 
-            if ch != '_' && !ch.is_ascii_alphanumeric() {
+            if !is_ident_ch(ch) {
                 break;
             }
 
@@ -400,8 +406,8 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         return Ok(());
     }
 
-    // Variable reference
-    if ch == '_' || ch.is_ascii_alphanumeric() {
+    // Identifier (variable reference)
+    if is_ident_ch(ch) {
         let ident = input.parse_ident();
 
         // Check if there is a runtime function with this name
