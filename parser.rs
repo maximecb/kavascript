@@ -391,14 +391,6 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         return Ok(());
     }
 
-    // Parenthesized expression
-    if ch == '(' {
-        input.eat_ch();
-        parse_expr(input, fun, scope)?;
-        input.expect_token(")")?;
-        return Ok(());
-    }
-
     // Identifier (variable reference)
     if is_ident_ch(ch) {
         let ident = input.parse_ident();
@@ -432,6 +424,22 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
             fun.insns.push(Insn::GetLocal{ idx: local_idx.unwrap() });
         }
 
+        return Ok(());
+    }
+
+    // Parenthesized expression
+    if ch == '(' {
+        input.eat_ch();
+        parse_expr(input, fun, scope)?;
+        input.expect_token(")")?;
+        return Ok(());
+    }
+
+    // Unary negation expression
+    if ch == '!' {
+        input.eat_ch();
+        parse_expr(input, fun, scope)?;
+        fun.insns.push(Insn::Not);
         return Ok(());
     }
 
@@ -862,10 +870,11 @@ mod tests
         parse_str("assert 1;");
         parse_str("let x = 3;");
         parse_str("let x = 3; return x;");
-
         parse_fails("letx=3;");
         parse_fails("let x = 3; returnx;");
         parse_fails("assert1;");
+
+        parse_str("let x = 3; if (!x) x = 1;");
     }
 
     #[test]

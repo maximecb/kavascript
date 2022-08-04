@@ -32,6 +32,9 @@ pub enum Insn
     Sub,
     Mul,
 
+    // Unary negation (logical not)
+    Not,
+
     // Comparisons
     Eq,
     Ne,
