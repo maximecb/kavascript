@@ -27,12 +27,12 @@ Build and run the project:
 # Run tests
 cargo test
 
-# Builds and runs the project
-cargo run
-
 # Compiles project to ./target/debug/plush
 carbo build
 
 # For best performance, builds to ./target/release/plush
 carbo build --release
+
+# Run an example script
+cargo run example.pls
 ```
