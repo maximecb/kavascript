@@ -32,9 +32,6 @@ pub enum Insn
     Sub,
     Mul,
 
-    // Unary negation (logical not)
-    Not,
-
     // Comparisons
     Eq,
     Ne,
@@ -42,6 +39,9 @@ pub enum Insn
     Le,
     Gt,
     Ge,
+
+    // Unary negation (logical not)
+    Not,
 
     // Branch instructions
     Jump { offset: isize },
@@ -222,6 +222,15 @@ impl VM
                     self.stack.push(Int64(b));
                 }
 
+                Not => {
+                    let v0 = self.stack_pop();
+                    let b = match v0 {
+                        Int64(v0) => if v0 == 0 { 1 } else { 0 },
+                        _ => panic!()
+                    };
+                    self.stack.push(Int64(b));
+                }
+
                 Jump{ offset } => {
                     self.pc = unsafe { self.pc.offset(*offset as isize) };
                 }
@@ -360,6 +369,8 @@ mod tests
         assert_eq!(eval_src("let x = 0; if (1) x = 2; return x;"), Int64(2));
         assert_eq!(eval_src("let x = 0; if (0) x = x+2; else x = x+1; return x;"), Int64(1));
         assert_eq!(eval_src("let x = 0; if (1) x = x+2; else x = x+1; return x;"), Int64(2));
+        assert_eq!(eval_src("let x = 0; if (x) return 1; else return 0;"), Int64(0));
+        assert_eq!(eval_src("let x = 0; if (!x) return 1; else return 0;"), Int64(1));
     }
 
     #[test]
