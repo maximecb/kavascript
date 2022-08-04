@@ -34,7 +34,7 @@ impl fmt::Display for ParseError
     }
 }
 
-/// Function to check if a character can be part of an identifier
+/// Check if a character can be part of an identifier
 fn is_ident_ch(ch: char) -> bool
 {
     ch.is_ascii_alphanumeric() || ch == '_'
@@ -123,7 +123,7 @@ impl Input
             }
 
             // Single-line comments
-            if self.match_exact("//")
+            if self.match_chars(&['/', '/'])
             {
                 loop
                 {
@@ -149,39 +149,45 @@ impl Input
         }
     }
 
-    /// Match a string in the input, no preceding whitespace allowed
-    pub fn match_exact(&mut self, token: &str) -> bool
+    /// Match characters in the input, no preceding whitespace allowed
+    pub fn match_chars(&mut self, chars: &[char]) -> bool
     {
-        let token_chars: Vec<char> = token.chars().collect();
-        let end_pos = self.pos + token_chars.len();
+        let end_pos = self.pos + chars.len();
 
         if end_pos > self.input_str.len() {
             return false;
         }
 
-        if token_chars == self.input_str[self.pos..end_pos] {
-            for i in 0..token_chars.len() {
-                self.eat_ch();
+        // Compare the characters to match
+        for i in 0..chars.len() {
+            if chars[i] != self.input_str[self.pos + i] {
+                return false;
             }
-
-            return true;
         }
 
-        return false;
+        // Consumed the matched characters
+        for i in 0..chars.len() {
+            self.eat_ch();
+        }
+
+        return true;
     }
 
     /// Match a string in the input, ignoring preceding whitespace
+    /// Do not use this method to match a keyword which could be
+    /// an identifier.
     pub fn match_token(&mut self, token: &str) -> bool
     {
         // Consume preceding whitespace
         self.eat_ws();
 
-        return self.match_exact(token);
+        let token_chars: Vec<char> = token.chars().collect();
+        return self.match_chars(&token_chars);
     }
 
     /// Match a keyword in the input, ignoring preceding whitespace
-    /// This is different from match_token because there can't be
-    /// a match if the following chars are also valid identifier chars
+    /// This is different from match_token because there can't be a
+    /// match if the following chars are also valid identifier chars.
     pub fn match_keyword(&mut self, keyword: &str) -> bool
     {
         self.eat_ws();
@@ -189,26 +195,13 @@ impl Input
         let chars: Vec<char> = keyword.chars().collect();
         let end_pos = self.pos + chars.len();
 
-        if end_pos > self.input_str.len() {
-            return false;
-        }
-
         // We can't match as a keyword if the next chars are
         // valid identifier characters
-        if is_ident_ch(self.input_str[self.pos]) {
+        if end_pos < self.input_str.len() && is_ident_ch(self.input_str[end_pos]) {
             return false;
         }
 
-        // If we match the keyword characters
-        if chars == self.input_str[self.pos..end_pos] {
-            for i in 0..chars.len() {
-                self.eat_ch();
-            }
-
-            return true;
-        }
-
-        return false;
+        return self.match_chars(&chars);
     }
 
     /// Shortcut for yielding a parse error wrapped in a result type
@@ -594,7 +587,7 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
 {
     input.eat_ws();
 
-    if input.match_token("return") {
+    if input.match_keyword("return") {
         parse_expr(input, fun, scope)?;
         fun.insns.push(Insn::Return);
         input.expect_token(";")?;
@@ -602,7 +595,7 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
     }
 
     // Variable declaration
-    if input.match_token("let") {
+    if input.match_keyword("let") {
         input.eat_ws();
         let ident = input.parse_ident();
         input.expect_token("=")?;
@@ -628,9 +621,20 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         }
     }
 
+    // Assert statement
+    if input.match_keyword("assert") {
+        parse_expr(input, fun, scope)?;
+        input.expect_token(";")?;
+
+        // If the expression is true, don't panic
+        fun.insns.push(Insn::IfTrue { offset: 1 });
+        fun.insns.push(Insn::Panic);
+
+        return Ok(());
+    }
+
     // Block statement
     if input.match_token("{") {
-
         // Create a nested scope for the block
         let mut scope = Scope::new_nested(scope);
 
@@ -648,18 +652,6 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
 
             parse_stmt(input, fun, &mut scope)?;
         }
-
-        return Ok(());
-    }
-
-    // Assert statement
-    if input.match_token("assert") {
-        parse_expr(input, fun, scope)?;
-        input.expect_token(";")?;
-
-        // If the expression is true, don't panic
-        fun.insns.push(Insn::IfTrue { offset: 1 });
-        fun.insns.push(Insn::Panic);
 
         return Ok(());
     }
@@ -796,6 +788,14 @@ mod tests
         parse_str("let x = 3;");
         parse_str("let x = 3; let y = 5;");
         parse_str("{ let x = 3; x; } let y = 4;");
+
+        parse_str("assert 1;");
+        parse_str("let x = 3;");
+        parse_str("let x = 3; return x;");
+
+        parse_fails("letx=3;");
+        parse_fails("let x = 3; returnx;");
+        parse_fails("assert1;");
     }
 
     #[test]
