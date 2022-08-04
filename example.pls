@@ -11,6 +11,10 @@ println("Hello world!");
 
 let i = 0;
 while (i != 10) {
-    println("i=", i);
+    println("i = ", i);
     i = i + 1;
 }
+
+println("Input an integer number:");
+let n = read_int();
+println("n + 1 = ", n + 1);

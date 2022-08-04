@@ -253,7 +253,10 @@ impl VM
 
                     // The last argument is at the top
                     // This pointer is invalid if argc is zero
-                    let args = &self.stack[self.stack.len() - argc] as *const Value;
+                    let args = match argc {
+                        0 => 0 as *const Value,
+                        _ => &self.stack[self.stack.len() - argc] as *const Value
+                    };
 
                     match callee {
                         HostFn(host_fn) => {
