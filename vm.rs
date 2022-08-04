@@ -127,6 +127,7 @@ impl VM
         loop
         {
             let insn = unsafe { &*self.pc };
+            //dbg!(insn);
 
             match insn {
                 Panic => panic!("panic"),
@@ -194,6 +195,20 @@ impl VM
                     self.stack.push(Int64(b));
                 }
 
+                Ne => {
+                    let v1 = self.stack_pop();
+                    let v0 = self.stack_pop();
+                    let b = match (v0, v1) {
+                        (Int64(v0), Int64(v1)) => if v0 != v1 { 1 } else { 0 },
+                        _ => panic!()
+                    };
+                    self.stack.push(Int64(b));
+                }
+
+                Jump{ offset } => {
+                    self.pc = unsafe { self.pc.offset(*offset as isize) };
+                }
+
                 IfTrue{ offset } => {
                     let v = self.stack_pop();
                     match v {
@@ -239,6 +254,7 @@ impl VM
                     return self.stack_pop();
                 }
 
+                #[allow(unreachable_patterns)]
                 _ => panic!("unknown instruction in eval: {:?}", insn)
             }
 
@@ -315,5 +331,11 @@ mod tests
     fn test_assert()
     {
         eval_src("assert 3;");
+    }
+
+    #[test]
+    fn test_while()
+    {
+        assert_eq!(eval_src("let i = 0; while (i != 10) i = i + 1; return i;"), Int64(10));
     }
 }

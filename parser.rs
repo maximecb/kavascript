@@ -621,6 +621,31 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         }
     }
 
+    // While loop
+    if input.match_keyword("while") {
+        // Parse the test expression
+        input.expect_token("(")?;
+        let test_idx = fun.insns.len() as isize;
+        parse_expr(input, fun, scope)?;
+        input.expect_token(")")?;
+
+        // If the test evaluates to false, jump past the loop body
+        let if_idx = fun.insns.len() as isize;
+        fun.insns.push(Insn::IfFalse { offset: 0 });
+
+        // Parse the loop body
+        parse_stmt(input, fun, scope)?;
+
+        // Jump back to the loop test
+        let jump_idx = fun.insns.len() as isize;
+        fun.insns.push(Insn::Jump { offset: test_idx - (jump_idx + 1) });
+
+        // Patch the loop test jump offset
+        fun.insns[if_idx as usize] = Insn::IfFalse { offset: (jump_idx + 1) - (if_idx + 1) };
+
+        return Ok(());
+    }
+
     // Assert statement
     if input.match_keyword("assert") {
         parse_expr(input, fun, scope)?;

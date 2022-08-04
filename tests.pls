@@ -8,3 +8,9 @@ println(2);
 println(1,2,3);
 println(x2);
 println("Hello world!");
+
+let i = 0;
+while (i != 10) {
+    println("i=", i);
+    i = i + 1;
+}
