@@ -35,6 +35,10 @@ pub enum Insn
     // Comparisons
     Eq,
     Ne,
+    Lt,
+    Le,
+    Gt,
+    Ge,
 
     // Branch instructions
     Jump { offset: isize },
@@ -205,6 +209,16 @@ impl VM
                     self.stack.push(Int64(b));
                 }
 
+                Lt => {
+                    let v1 = self.stack_pop();
+                    let v0 = self.stack_pop();
+                    let b = match (v0, v1) {
+                        (Int64(v0), Int64(v1)) => if v0 < v1 { 1 } else { 0 },
+                        _ => panic!()
+                    };
+                    self.stack.push(Int64(b));
+                }
+
                 Jump{ offset } => {
                     self.pc = unsafe { self.pc.offset(*offset as isize) };
                 }
@@ -336,6 +350,6 @@ mod tests
     #[test]
     fn test_while()
     {
-        assert_eq!(eval_src("let i = 0; while (i != 10) i = i + 1; return i;"), Int64(10));
+        assert_eq!(eval_src("let i = 0; while (i < 10) i = i + 1; return i;"), Int64(10));
     }
 }

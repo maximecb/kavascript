@@ -481,18 +481,17 @@ struct OpInfo
 {
     op: &'static str,
     prec: usize,
-
-    // TODO: assoc?
 }
 
 /// Binary operators and their precedence level
 /// https://en.cppreference.com/w/c/language/operator_precedence
-const BIN_OPS: [OpInfo; 5] = [
+const BIN_OPS: [OpInfo; 6] = [
     OpInfo { op: "*", prec: 2 },
     OpInfo { op: "+", prec: 1 },
     OpInfo { op: "-", prec: 1 },
     OpInfo { op: "==", prec: 0 },
     OpInfo { op: "!=", prec: 0 },
+    OpInfo { op: "<", prec: 0 },
 ];
 
 /// Try to match a binary operator in the input
@@ -515,6 +514,7 @@ fn emit_op(op: &str, fun: &mut Function)
         "-" => fun.insns.push(Insn::Sub),
         "==" => fun.insns.push(Insn::Eq),
         "!=" => fun.insns.push(Insn::Ne),
+        "<" => fun.insns.push(Insn::Lt),
         _ => panic!()
     }
 }
