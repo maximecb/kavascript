@@ -15,6 +15,14 @@ while (i != 10) {
     i = i + 1;
 }
 
-println("Input an integer number:");
-let n = read_int();
-println("n + 1 = ", n + 1);
+
+
+//println("Input an integer number:");
+//let n = read_int();
+//println("n + 1 = ", n + 1);
+
+
+println("before");
+if (0 < 10)
+    println("true");
+println("after");
