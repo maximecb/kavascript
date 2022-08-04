@@ -351,6 +351,15 @@ mod tests
     }
 
     #[test]
+    fn test_if()
+    {
+        assert_eq!(eval_src("let x = 0; if (0) x = 2; return x;"), Int64(0));
+        assert_eq!(eval_src("let x = 0; if (1) x = 2; return x;"), Int64(2));
+        assert_eq!(eval_src("let x = 0; if (0) x = x+2; else x = x+1; return x;"), Int64(1));
+        assert_eq!(eval_src("let x = 0; if (1) x = x+2; else x = x+1; return x;"), Int64(2));
+    }
+
+    #[test]
     fn test_while()
     {
         assert_eq!(eval_src("let i = 0; while (i < 10) i = i + 1; return i;"), Int64(10));
