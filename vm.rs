@@ -106,9 +106,20 @@ impl VM
         self.stack.len()
     }
 
+    /// Pop a value from the stack
     pub fn stack_pop(&mut self) -> Value
     {
         self.stack.pop().expect("stack empty")
+    }
+
+    /// Push a Rust boolean onto the value stack
+    pub fn push_bool(&mut self, val: bool)
+    {
+        let val = Value::Int64(
+            if val { 1 } else { 0 }
+        );
+
+        self.stack.push(val);
     }
 
     pub fn eval(&mut self, fun: &Function) -> Value

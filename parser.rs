@@ -443,6 +443,18 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         return Ok(());
     }
 
+    // Function expression
+    if input.match_keyword("fn") {
+        // TODO: parse in a separate function?
+        todo!();
+
+        //return parse_fn(input, fun, scope)?;
+
+
+
+
+    }
+
     input.parse_error("unknown atomic expression")
 }
 
