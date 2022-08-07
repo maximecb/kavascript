@@ -206,40 +206,36 @@ impl VM
                 Eq => {
                     let v1 = self.stack_pop();
                     let v0 = self.stack_pop();
-                    let b = match (v0, v1) {
-                        (Int64(v0), Int64(v1)) => if v0 == v1 { 1 } else { 0 },
+                    match (v0, v1) {
+                        (Int64(v0), Int64(v1)) => self.push_bool(v0 == v1),
                         _ => panic!()
                     };
-                    self.stack.push(Int64(b));
                 }
 
                 Ne => {
                     let v1 = self.stack_pop();
                     let v0 = self.stack_pop();
-                    let b = match (v0, v1) {
-                        (Int64(v0), Int64(v1)) => if v0 != v1 { 1 } else { 0 },
+                    match (v0, v1) {
+                        (Int64(v0), Int64(v1)) => self.push_bool(v0 != v1),
                         _ => panic!()
                     };
-                    self.stack.push(Int64(b));
                 }
 
                 Lt => {
                     let v1 = self.stack_pop();
                     let v0 = self.stack_pop();
-                    let b = match (v0, v1) {
-                        (Int64(v0), Int64(v1)) => if v0 < v1 { 1 } else { 0 },
+                    match (v0, v1) {
+                        (Int64(v0), Int64(v1)) => self.push_bool(v0 < v1),
                         _ => panic!()
                     };
-                    self.stack.push(Int64(b));
                 }
 
                 Not => {
                     let v0 = self.stack_pop();
-                    let b = match v0 {
-                        Int64(v0) => if v0 == 0 { 1 } else { 0 },
+                    match v0 {
+                        Int64(v0) => self.push_bool(v0 == 0),
                         _ => panic!()
                     };
-                    self.stack.push(Int64(b));
                 }
 
                 Jump{ offset } => {
