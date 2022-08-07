@@ -444,15 +444,38 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
     }
 
     // Function expression
-    if input.match_keyword("fn") {
-        // TODO: parse in a separate function?
-        todo!();
+    if input.match_keyword("fun") {
+        let mut new_fun = Function::new(&input.src_name);
+        let mut scope = Scope::new(&mut new_fun);
 
-        //return parse_fn(input, fun, scope)?;
+        input.expect_token("(")?;
 
+        loop {
+            if input.eof() {
+                return input.parse_error("end of file in function parameter list");
+            }
 
+            if input.match_token(")") {
+                break;
+            }
 
+            let param_name = input.parse_ident();
+            scope.decl_var(&param_name);
+            new_fun.params.push(param_name);
 
+            if input.match_token(")") {
+                break;
+            }
+
+            input.expect_token(",")?;
+        }
+
+        // Parse the function body
+        parse_stmt(input, &mut new_fun, &mut scope)?;
+
+        // TODO: need to GC allocate fun
+        // TODO: need to push stmt on stack, Insn::Push
+        fun.insns.push(Insn::Push{ val: Value::Nil });
     }
 
     input.parse_error("unknown atomic expression")

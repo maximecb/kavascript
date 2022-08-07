@@ -56,8 +56,8 @@ pub struct Function
     /// Name of the function
     pub name: String,
 
-    // TODO: arguments list
-
+    /// Parameter list
+    pub params: Vec<String>,
 
     /// Number of local variables
     pub num_locals: usize,
@@ -72,6 +72,7 @@ impl Function
     {
         Self {
             name: name.to_string(),
+            params: Vec::default(),
             num_locals: 0,
             insns: Vec::default(),
         }
