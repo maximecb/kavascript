@@ -391,42 +391,6 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         return Ok(());
     }
 
-    // Identifier (variable reference)
-    if is_ident_ch(ch) {
-        let ident = input.parse_ident();
-
-        // Check if there is a runtime function with this name
-        let runtime_fn = get_runtime_fn(&ident);
-
-        if runtime_fn.is_some() {
-            let host_fn = Value::HostFn(runtime_fn.unwrap());
-            fun.insns.push(Insn::Push { val: host_fn });
-            return Ok(());
-        }
-
-        let local_idx = scope.lookup(&ident);
-
-        // If the variable is not found
-        if local_idx.is_none() {
-            return input.parse_error(&format!("undeclared variable {}", ident));
-        }
-
-        // If this is actually an assignment
-        if input.match_token("=") {
-            // Parse the expression to assign
-            parse_expr(input, fun, scope)?;
-
-            fun.insns.push(Insn::Dup);
-            fun.insns.push(Insn::SetLocal{ idx: local_idx.unwrap() });
-        }
-        else
-        {
-            fun.insns.push(Insn::GetLocal{ idx: local_idx.unwrap() });
-        }
-
-        return Ok(());
-    }
-
     // Parenthesized expression
     if ch == '(' {
         input.eat_ch();
@@ -476,6 +440,44 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         // TODO: need to GC allocate fun
         // TODO: need to push stmt on stack, Insn::Push
         fun.insns.push(Insn::Push{ val: Value::Nil });
+
+        return Ok(());
+    }
+
+    // Identifier (variable reference)
+    if is_ident_ch(ch) {
+        let ident = input.parse_ident();
+
+        // Check if there is a runtime function with this name
+        let runtime_fn = get_runtime_fn(&ident);
+
+        if runtime_fn.is_some() {
+            let host_fn = Value::HostFn(runtime_fn.unwrap());
+            fun.insns.push(Insn::Push { val: host_fn });
+            return Ok(());
+        }
+
+        let local_idx = scope.lookup(&ident);
+
+        // If the variable is not found
+        if local_idx.is_none() {
+            return input.parse_error(&format!("undeclared variable {}", ident));
+        }
+
+        // If this is actually an assignment
+        if input.match_token("=") {
+            // Parse the expression to assign
+            parse_expr(input, fun, scope)?;
+
+            fun.insns.push(Insn::Dup);
+            fun.insns.push(Insn::SetLocal{ idx: local_idx.unwrap() });
+        }
+        else
+        {
+            fun.insns.push(Insn::GetLocal{ idx: local_idx.unwrap() });
+        }
+
+        return Ok(());
     }
 
     input.parse_error("unknown atomic expression")
@@ -932,5 +934,18 @@ mod tests
 
         parse_str("println(1);");
         parse_str("println(1, 2);");
+    }
+
+
+    #[test]
+    fn fun_expr()
+    {
+        parse_str("let f = fun() {};");
+        parse_str("let f = fun(x) {};");
+        parse_str("let f = fun(x,) {};");
+        parse_str("let f = fun(x,y) {};");
+        parse_str("let f = fun(x,y) { return 1; };");
+
+        //parse_fails("let f = fun(x,y,1) {};");
     }
 }
