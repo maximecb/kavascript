@@ -1,17 +1,19 @@
 use std::collections::HashMap;
 use crate::runtime::HostFn;
 
+/// Dynamically typed value
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value
 {
     Int64(i64),
     UInt64(u64),
-    Str(String),
     HostFn(HostFn),
+    Fun(*mut Function),
+    Str(String),
     Nil,
 }
 
-// Opcode enumeration
+/// Instruction opcode types
 #[derive(Debug, Clone)]
 pub enum Insn
 {
@@ -79,6 +81,68 @@ impl Function
     }
 }
 
+
+
+
+
+
+
+/// Hold an object to be placed in the GC heap and mark bits
+#[repr(C)]
+struct HeapObject<T>
+{
+    /// Mark bits/boolean
+    mark: usize,
+
+    /// Object stored on the heap
+    object: T
+}
+
+enum GCObject
+{
+    Fun(Box<HeapObject<Function>>),
+    Str(Box<HeapObject<String>>),
+}
+
+impl GCObject
+{
+    fn new_fun(fun: Function) -> Self
+    {
+        let heap_obj = HeapObject {
+            mark: 0,
+            object: fun
+        };
+
+        Self::Fun(Box::new(heap_obj))
+    }
+
+    /// Get a GC heap pointer for this object wrapped
+    /// into a dynamically-typed value
+    fn get_ptr_value(&mut self) -> Value
+    {
+        match self {
+            Self::Fun(gc_box) => Value::Fun(&mut (gc_box.object) as *mut Function),
+            //Self::Str(gc_box) => Value::Str(&mut (gc_box.object) as *mut String),
+            _ => todo!()
+        }
+    }
+
+    fn is_marked(&self) -> bool
+    {
+        match self {
+            Self::Fun(gc_box) => gc_box.mark != 0,
+            Self::Str(gc_box) => gc_box.mark != 0,
+        }
+    }
+}
+
+
+
+
+
+
+
+
 pub struct VM
 {
     /// Value stack
@@ -89,6 +153,9 @@ pub struct VM
 
     /// Frame pointer (index of the bottom of the frame)
     fp: usize,
+
+    /// List of objects allocated in the GC heap
+    gc_objects: Vec<GCObject>,
 }
 
 impl VM
@@ -99,6 +166,7 @@ impl VM
             stack: Vec::default(),
             pc: 0 as *const Insn,
             fp: 0,
+            gc_objects: Vec::default(),
         }
     }
 
