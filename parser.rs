@@ -221,9 +221,13 @@ impl Input
     }
 
     /// Parse a decimal integer value
-    pub fn parse_int(&mut self) -> i64
+    pub fn parse_int(&mut self) -> Result<i64, ParseError>
     {
         let mut int_val = 0_i64;
+
+        if self.eof() || self.peek_ch().to_digit(10).is_none() {
+            return self.parse_error("expected digit");
+        }
 
         loop
         {
@@ -242,7 +246,7 @@ impl Input
             self.eat_ch();
         }
 
-        return int_val;
+        return Ok(int_val);
     }
 
     /// Parse a string literal
@@ -269,9 +273,13 @@ impl Input
     }
 
     /// Parse a C-style alphanumeric identifier
-    pub fn parse_ident(&mut self) -> String
+    pub fn parse_ident(&mut self) -> Result<String, ParseError>
     {
         let mut ident = String::new();
+
+        if self.eof() || !self.peek_ch().is_ascii_alphabetic() {
+            return self.parse_error("expected identifier");
+        }
 
         loop
         {
@@ -289,7 +297,7 @@ impl Input
             self.eat_ch();
         }
 
-        return ident;
+        return Ok(ident);
     }
 }
 
@@ -378,7 +386,7 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
 
     // Decimal integer literal
     if ch.is_digit(10) {
-        let int_val = input.parse_int();
+        let int_val = input.parse_int()?;
         fun.insns.push(Insn::Push { val: Value::Int64(int_val) });
         return Ok(());
     }
@@ -423,7 +431,7 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
                 break;
             }
 
-            let param_name = input.parse_ident();
+            let param_name = input.parse_ident()?;
             scope.decl_var(&param_name);
             new_fun.params.push(param_name);
 
@@ -446,7 +454,7 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
 
     // Identifier (variable reference)
     if is_ident_ch(ch) {
-        let ident = input.parse_ident();
+        let ident = input.parse_ident()?;
 
         // Check if there is a runtime function with this name
         let runtime_fn = get_runtime_fn(&ident);
@@ -642,7 +650,7 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
     // Variable declaration
     if input.match_keyword("let") {
         input.eat_ws();
-        let ident = input.parse_ident();
+        let ident = input.parse_ident()?;
         input.expect_token("=")?;
         parse_expr(input, fun, scope)?;
         input.expect_token(";")?;
@@ -844,10 +852,10 @@ mod tests
     {
         let mut input = Input::new("1 + 2", "input");
         input.eat_ws();
-        assert_eq!(input.parse_int(), 1);
+        assert_eq!(input.parse_int().unwrap(), 1);
         assert!(input.match_token("+"));
         input.eat_ws();
-        assert_eq!(input.parse_int(), 2);
+        assert_eq!(input.parse_int().unwrap(), 2);
         assert!(input.eof());
     }
 
@@ -866,10 +874,10 @@ mod tests
     fn single_line_comment()
     {
         let mut input = Input::new("1 // test\n  2", "input");
-        assert_eq!(input.parse_int(), 1);
+        assert_eq!(input.parse_int().unwrap(), 1);
         input.eat_ws();
         dbg!(input.pos);
-        assert_eq!(input.parse_int(), 2);
+        assert_eq!(input.parse_int().unwrap(), 2);
         assert!(input.eof());
     }
 
@@ -945,7 +953,6 @@ mod tests
         parse_str("let f = fun(x,) {};");
         parse_str("let f = fun(x,y) {};");
         parse_str("let f = fun(x,y) { return 1; };");
-
-        //parse_fails("let f = fun(x,y,1) {};");
+        parse_fails("let f = fun(x,y,1) {};");
     }
 }
