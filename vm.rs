@@ -154,6 +154,12 @@ pub struct VM
 
     /// List of objects allocated in the GC heap
     gc_objects: Vec<GCObject>,
+
+    /// Current total size of allocated objects in bytes
+    heap_size: usize,
+
+    /// Maximum heap size in bytes
+    max_heap_size: usize,
 }
 
 impl VM
@@ -165,6 +171,8 @@ impl VM
             pc: 0 as *const Insn,
             fp: 0,
             gc_objects: Vec::default(),
+            heap_size: 0,
+            max_heap_size: 10_000_000
         }
     }
 
@@ -173,14 +181,21 @@ impl VM
     {
         let mut obj: GCObject = obj.into();
         let val = obj.get_ptr_value();
+
+        // Update the heap size
+        self.heap_size += std::mem::size_of::<T>();
+
+        // If we've exceeded the max heap size
+        if self.heap_size > self.max_heap_size {
+            // Don't trigger a GC if we're not currently executing anything
+            if self.stack.len() > 0 {
+                //self.gc_collect();
+            }
+        }
+
+        // We push the new object after a potential collection
+        // because we don't want to collect the new object
         self.gc_objects.push(obj);
-
-        // TODO: may trigger collection,
-        // but don't collect the new object
-
-
-
-
 
         val
     }
