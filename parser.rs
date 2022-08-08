@@ -236,6 +236,13 @@ impl Input
             }
 
             let ch = self.peek_ch();
+
+            // Allow underscores as separators
+            if ch == '_' {
+                self.eat_ch();
+                continue;
+            }
+
             let digit = ch.to_digit(10);
 
             if digit.is_none() {
@@ -889,6 +896,7 @@ mod tests
         parse_str("1;");
         parse_str("1; ");
         parse_str(" \"foobar\";");
+        parse_str("1_000_000;");
     }
 
     #[test]
