@@ -89,7 +89,7 @@ impl Function
 
 /// Hold an object to be placed in the GC heap and mark bits
 #[repr(C)]
-struct HeapObject<T>
+pub struct HeapObject<T>
 {
     /// Mark bits/boolean
     mark: usize,
@@ -98,7 +98,7 @@ struct HeapObject<T>
     object: T
 }
 
-enum GCObject
+pub enum GCObject
 {
     Fun(Box<HeapObject<Function>>),
     Str(Box<HeapObject<String>>),
@@ -106,16 +106,6 @@ enum GCObject
 
 impl GCObject
 {
-    fn new_fun(fun: Function) -> Self
-    {
-        let heap_obj = HeapObject {
-            mark: 0,
-            object: fun
-        };
-
-        Self::Fun(Box::new(heap_obj))
-    }
-
     /// Get a GC heap pointer for this object wrapped
     /// into a dynamically-typed value
     fn get_ptr_value(&mut self) -> Value
@@ -136,7 +126,15 @@ impl GCObject
     }
 }
 
-
+impl From<Function> for GCObject {
+    fn from(fun: Function) -> GCObject {
+        let heap_obj = HeapObject {
+            mark: 0,
+            object: fun
+        };
+        GCObject::Fun(Box::new(heap_obj))
+    }
+}
 
 
 
@@ -170,6 +168,24 @@ impl VM
         }
     }
 
+    /// Place an object under management of the GC heap
+    pub fn into_gc_heap<T>(&mut self, obj: T) -> Value where GCObject: From<T>
+    {
+        let mut obj: GCObject = obj.into();
+        let val = obj.get_ptr_value();
+        self.gc_objects.push(obj);
+
+        // TODO: may trigger collection,
+        // but don't collect the new object
+
+
+
+
+
+        val
+    }
+
+    /// Get the size of the stack
     pub fn stack_size(&self) -> usize
     {
         self.stack.len()
