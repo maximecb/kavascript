@@ -117,6 +117,14 @@ impl GCObject
         }
     }
 
+    fn clear_mark(&mut self)
+    {
+        match self {
+            Self::Fun(gc_box) => gc_box.mark = 0,
+            Self::Str(gc_box) => gc_box.mark = 0,
+        }
+    }
+
     fn is_marked(&self) -> bool
     {
         match self {
@@ -188,8 +196,9 @@ impl VM
         // If we've exceeded the max heap size
         if self.heap_size > self.max_heap_size {
             // Don't trigger a GC if we're not currently executing anything
+            // i.e. during compilation
             if self.stack.len() > 0 {
-                //self.gc_collect();
+                self.gc_collect();
             }
         }
 
@@ -198,6 +207,49 @@ impl VM
         self.gc_objects.push(obj);
 
         val
+    }
+
+
+
+
+    /// Transitively mark a GC root and everything reachable from it
+    fn mark_root(&self, root: &Value)
+    {
+
+
+
+
+    }
+
+    /// Perform a GC collection cycle (mark & sweep)
+    pub fn gc_collect(&mut self)
+    {
+        // Clear all the marks
+        for obj in &mut self.gc_objects {
+            obj.clear_mark();
+        }
+
+        // Mark all stack values as roots
+        for val in &self.stack {
+            self.mark_root(val);
+        }
+
+
+
+
+        // Delete unmarked objects
+        for idx in 0..self.gc_objects.len() {
+
+            //dbg!()
+
+
+        }
+
+
+
+
+
+
     }
 
     /// Get the size of the stack

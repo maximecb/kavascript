@@ -16,14 +16,14 @@ of bytecode if desired.
 
 Features:
 - Syntax inspired by JS and C
-- Simple and minimalistic by design
+- Minimalistic by design
 - Top down recursive descent parser with support for infix expressions
 - No separation between parsing and tokenization/lexing
 - Source code is parsed into bytecode directly, without building an AST
 - Token-threaded, stack-based bytecode interpreter
+- Simple mark & sweep garbage collector
 
 Limitations:
-- This language has no GC and everything is passed by value
 - Currently has no arrays or objects
 
 ## Installation
