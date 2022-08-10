@@ -402,7 +402,11 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
     if ch == '\"' {
         input.eat_ch();
         let str_val = input.parse_str()?;
-        fun.insns.push(Insn::Push { val: Value::Str(str_val) });
+
+        // FIXME
+        //fun.insns.push(Insn::Push { val: Value::Str(str_val) });
+        fun.insns.push(Insn::Push { val: Value::Nil });
+
         return Ok(());
     }
 

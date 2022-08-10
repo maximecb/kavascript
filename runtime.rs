@@ -8,11 +8,12 @@ pub type HostFn = fn(args: *const Value, argc: usize) -> Value;
 fn print(args: *const Value, argc: usize) -> Value
 {
     for i in 0..argc {
-        let arg = unsafe { &*args.add(i) };
+        let arg = unsafe { *args.add(i) };
 
         match arg {
             Int64(v) => print!("{}", v),
-            Str(s) => print!("{}", s),
+            Str(str_ptr) => print!("{}", unsafe{ &*str_ptr }),
+            Nil => print!("nil"),
             _ => panic!()
         }
     }

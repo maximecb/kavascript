@@ -2,19 +2,19 @@ use std::collections::HashMap;
 use crate::runtime::HostFn;
 
 /// Dynamically typed value
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Value
 {
     Int64(i64),
     UInt64(u64),
     HostFn(HostFn),
     Fun(*mut Function),
-    Str(String),
+    Str(*mut String),
     Nil,
 }
 
 /// Instruction opcode types
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum Insn
 {
     Panic,
@@ -209,16 +209,35 @@ impl VM
         val
     }
 
-
-
-
     /// Transitively mark a GC root and everything reachable from it
-    fn mark_root(&self, root: &Value)
+    fn mark_root(&self, root: Value)
     {
+        let mut stack: Vec<Value> = Vec::default();
+
+        stack.push(root);
+
+        while stack.len() > 0 {
+            let val = stack.pop().unwrap();
+
+            match val {
+                Value::Fun(fun_ptr) => {
+
+
+
+                    todo!()
+                }
+
+                Value::Str(str_ptr) => {
 
 
 
 
+                    todo!()
+                }
+
+                _ => {}
+            }
+        }
     }
 
     /// Perform a GC collection cycle (mark & sweep)
@@ -231,25 +250,11 @@ impl VM
 
         // Mark all stack values as roots
         for val in &self.stack {
-            self.mark_root(val);
+            self.mark_root(*val);
         }
-
-
-
 
         // Delete unmarked objects
-        for idx in 0..self.gc_objects.len() {
-
-            //dbg!()
-
-
-        }
-
-
-
-
-
-
+        self.gc_objects.retain(|obj| !obj.is_marked());
     }
 
     /// Get the size of the stack
@@ -296,7 +301,7 @@ impl VM
 
         loop
         {
-            let insn = unsafe { &*self.pc };
+            let insn = unsafe { *self.pc };
             //dbg!(insn);
 
             match insn {
@@ -305,7 +310,7 @@ impl VM
                 Halt => return Value::Nil,
 
                 Push { val } => {
-                    self.stack.push(val.clone());
+                    self.stack.push(val);
                 }
 
                 Pop => {
@@ -314,17 +319,17 @@ impl VM
 
                 Dup => {
                     let val = self.stack_pop();
-                    self.stack.push(val.clone());
-                    self.stack.push(val.clone());
+                    self.stack.push(val);
+                    self.stack.push(val);
                 }
 
                 SetLocal{ idx } => {
                     let val = self.stack_pop();
-                    self.stack[self.fp + idx] = val.clone();
+                    self.stack[self.fp + idx] = val;
                 }
 
                 GetLocal{ idx } => {
-                    let val = self.stack[self.fp + idx].clone();
+                    let val = self.stack[self.fp + idx];
                     self.stack.push(val);
                 }
 
@@ -391,7 +396,7 @@ impl VM
                 }
 
                 Jump{ offset } => {
-                    self.pc = unsafe { self.pc.offset(*offset as isize) };
+                    self.pc = unsafe { self.pc.offset(offset as isize) };
                 }
 
                 IfTrue{ offset } => {
@@ -399,7 +404,7 @@ impl VM
                     match v {
                         Int64(v) => {
                             if v != 0 {
-                                self.pc = unsafe { self.pc.offset(*offset as isize) }
+                                self.pc = unsafe { self.pc.offset(offset as isize) }
                             }
                         }
                         _ => panic!()
@@ -411,7 +416,7 @@ impl VM
                     match v {
                         Int64(v) => {
                             if v == 0 {
-                                self.pc = unsafe { self.pc.offset(*offset as isize) }
+                                self.pc = unsafe { self.pc.offset(offset as isize) }
                             }
                         }
                         _ => panic!()
@@ -431,7 +436,7 @@ impl VM
 
                     match callee {
                         HostFn(host_fn) => {
-                            let retv = host_fn(args, *argc);
+                            let retv = host_fn(args, argc);
                             self.stack.push(retv);
                         }
                         _ => panic!()
