@@ -144,6 +144,33 @@ impl From<Function> for GCObject {
     }
 }
 
+impl Value
+{
+    /// Check if a value is marked (or not a markable object)
+    fn is_marked(self) -> bool
+    {
+        let mark_bits_ptr = match self {
+            Value::Fun(ptr) => unsafe { (ptr as *mut usize).offset(-1) },
+            Value::Str(ptr) => unsafe { (ptr as *mut usize).offset(-1) },
+            _ => return true
+        };
+
+        return unsafe { *mark_bits_ptr != 1 };
+    }
+
+    /// Mark a GC object
+    fn mark(self)
+    {
+        let mark_bits_ptr = match self {
+            Value::Fun(ptr) => unsafe { (ptr as *mut usize).offset(-1) },
+            Value::Str(ptr) => unsafe { (ptr as *mut usize).offset(-1) },
+            _ => return
+        };
+
+        unsafe { *mark_bits_ptr = 1 };
+    }
+}
+
 
 
 
@@ -219,24 +246,28 @@ impl VM
         while stack.len() > 0 {
             let val = stack.pop().unwrap();
 
+            if val.is_marked() {
+                continue;
+            }
+
             match val {
                 Value::Fun(fun_ptr) => {
+                    let fun = unsafe { &*fun_ptr };
 
-
-
-                    todo!()
-                }
-
-                Value::Str(str_ptr) => {
-
-
-
+                    for insn in &fun.insns {
+                        match insn {
+                            Insn::Push { val } => stack.push(*val),
+                            _ => {}
+                        }
+                    }
 
                     todo!()
                 }
 
                 _ => {}
             }
+
+            val.mark();
         }
     }
 
