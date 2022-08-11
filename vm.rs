@@ -112,8 +112,7 @@ impl GCObject
     {
         match self {
             Self::Fun(gc_box) => Value::Fun(&mut (gc_box.object) as *mut Function),
-            //Self::Str(gc_box) => Value::Str(&mut (gc_box.object) as *mut String),
-            _ => todo!()
+            Self::Str(gc_box) => Value::Str(&mut (gc_box.object) as *mut String),
         }
     }
 
@@ -144,6 +143,16 @@ impl From<Function> for GCObject {
     }
 }
 
+impl From<String> for GCObject {
+    fn from(str: String) -> GCObject {
+        let heap_obj = HeapObject {
+            mark: 0,
+            object: str
+        };
+        GCObject::Str(Box::new(heap_obj))
+    }
+}
+
 impl Value
 {
     /// Check if a value is marked (or not a markable object)
@@ -155,7 +164,7 @@ impl Value
             _ => return true
         };
 
-        return unsafe { *mark_bits_ptr != 1 };
+        return unsafe { *mark_bits_ptr != 0 };
     }
 
     /// Mark a GC object
@@ -274,6 +283,8 @@ impl VM
     /// Perform a GC collection cycle (mark & sweep)
     pub fn gc_collect(&mut self)
     {
+        //println!("gc objs before collection: {}", self.gc_objects.len());
+
         // Clear all the marks
         for obj in &mut self.gc_objects {
             obj.clear_mark();
@@ -285,7 +296,9 @@ impl VM
         }
 
         // Delete unmarked objects
-        self.gc_objects.retain(|obj| !obj.is_marked());
+        self.gc_objects.retain(|obj| obj.is_marked());
+
+        //println!("gc objs after collection: {}", self.gc_objects.len());
     }
 
     /// Get the size of the stack
@@ -298,6 +311,12 @@ impl VM
     pub fn stack_pop(&mut self) -> Value
     {
         self.stack.pop().expect("stack empty")
+    }
+
+    /// Push a value on the stack
+    pub fn stack_push(&mut self, val: Value)
+    {
+        self.stack.push(val);
     }
 
     /// Push a Rust boolean onto the value stack
@@ -572,5 +591,20 @@ mod tests
     fn test_while()
     {
         assert_eq!(eval_src("let i = 0; while (i < 10) i = i + 1; return i;"), Int64(10));
+    }
+
+    #[test]
+    fn test_gc()
+    {
+        let mut vm = VM::new();
+        let str_val = vm.into_gc_heap( String::from("hello") );
+
+        vm.stack_push(str_val);
+        vm.gc_collect();
+        assert!(vm.gc_objects.len() == 1);
+
+        vm.stack_pop();
+        vm.gc_collect();
+        assert!(vm.gc_objects.len() == 0);
     }
 }
