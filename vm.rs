@@ -151,6 +151,16 @@ impl From<String> for GCObject {
     }
 }
 
+impl From<&str> for GCObject {
+    fn from(str: &str) -> GCObject {
+        let heap_obj = HeapObject {
+            mark: 0,
+            object: String::from(str)
+        };
+        GCObject::Str(Box::new(heap_obj))
+    }
+}
+
 impl Value
 {
     /// Check if a value is marked (or not a markable object)
@@ -177,11 +187,6 @@ impl Value
         unsafe { *mark_bits_ptr = 1 };
     }
 }
-
-
-
-
-
 
 pub struct VM
 {
@@ -614,11 +619,19 @@ mod tests
     fn test_gc()
     {
         let mut vm = VM::new();
-        let str_val = vm.into_gc_heap(String::from("hello"));
+        let str_val = vm.into_gc_heap("hello");
 
         vm.stack_push(str_val);
         vm.gc_collect();
         assert!(vm.gc_objects.len() == 1);
+
+        match str_val {
+            Str(str_ptr) => unsafe {
+                let str = &*str_ptr;
+                assert!(str == "hello");
+            }
+            _ => panic!()
+        }
 
         vm.stack_pop();
         vm.gc_collect();
