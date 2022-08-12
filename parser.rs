@@ -276,6 +276,17 @@ impl Input
                 break;
             }
 
+            if ch == '\\' {
+                match self.eat_ch() {
+                    '\\' => out.push('\\'),
+                    't' => out.push('\t'),
+                    'n' => out.push('\n'),
+                    _ => return self.parse_error("unknown escape sequence")
+                }
+
+                continue;
+            }
+
             out.push(ch);
         }
 
@@ -908,6 +919,7 @@ mod tests
         parse_ok("1;");
         parse_ok("1; ");
         parse_ok(" \"foobar\";");
+        parse_ok("'foo\tbar\nbif';");
         parse_ok("1_000_000;");
     }
 
@@ -964,7 +976,6 @@ mod tests
         parse_ok("println(1);");
         parse_ok("println(1, 2);");
     }
-
 
     #[test]
     fn fun_expr()
