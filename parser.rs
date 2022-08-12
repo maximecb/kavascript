@@ -421,7 +421,7 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
     // Unary logical not expression
     if ch == '!' {
         input.eat_ch();
-        parse_expr(input, fun, scope)?;
+        parse_atom(input, fun, scope)?;
         fun.insns.push(Insn::Not);
         return Ok(());
     }
@@ -429,7 +429,7 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
     // Unary negation expression
     if ch == '-' {
         input.eat_ch();
-        parse_expr(input, fun, scope)?;
+        parse_atom(input, fun, scope)?;
         fun.insns.push(Insn::Neg);
         return Ok(());
     }

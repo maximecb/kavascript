@@ -35,6 +35,9 @@ pub enum Insn
     Mul,
     Mod,
 
+    // Unary negation
+    Neg,
+
     // Comparisons
     Eq,
     Ne,
@@ -42,9 +45,6 @@ pub enum Insn
     Le,
     Gt,
     Ge,
-
-    // Unary negation
-    Neg,
 
     // Unary logical not
     Not,
@@ -408,6 +408,14 @@ impl VM
                     }
                 }
 
+                Neg => {
+                    let v0 = self.stack_pop();
+                    match v0 {
+                        Int64(v0) => self.stack.push(Int64(-v0)),
+                        _ => panic!()
+                    }
+                }
+
                 Mod => {
                     let v1 = self.stack_pop();
                     let v0 = self.stack_pop();
@@ -538,6 +546,7 @@ mod tests
         assert_eq!(eval_src("return 7;"), Int64(7));
         assert_eq!(eval_src("return 1 + 7;"), Int64(8));
         assert_eq!(eval_src("return 1 + 2 + 3;"), Int64(6));
+        assert_eq!(eval_src("return -3;"), Int64(-3));
     }
 
     #[test]
@@ -550,6 +559,7 @@ mod tests
         assert_eq!(eval_src("return (1 + 2) * 3;"), Int64(9));
         assert_eq!(eval_src("return (1 * 2) + (3 * 4);"), Int64(14));
         assert_eq!(eval_src("return 1 + 2 * 3 + 4;"), Int64(11));
+        assert_eq!(eval_src("return -(1 + 2 * 3) + 4;"), Int64(-3));
 
         // Subtract and operand ordering
         assert_eq!(eval_src("return 5 - 3;"), Int64(2));
