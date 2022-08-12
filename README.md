@@ -1,4 +1,4 @@
-# KavaScipt
+# KavaScript
 
 Simple, dynamically-typed toy programming language for fun/didactic/tutorial purposes.
 Implemented in Rust. The codebase is intentionally kept small, easy to read and is well-commented.
