@@ -657,7 +657,7 @@ mod tests
     #[test]
     fn test_strings()
     {
-        assert_eq!(eval_src("return \"foo\" + \"bar\" == \"foobar\";"), Int64(1));
+        assert_eq!(eval_src("return 'foo' + 'bar' == 'foobar';"), Int64(1));
     }
 
     #[test]

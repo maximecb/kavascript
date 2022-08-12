@@ -259,6 +259,9 @@ impl Input
     /// Parse a string literal
     pub fn parse_str(&mut self) -> Result<String, ParseError>
     {
+        let open_ch = self.eat_ch();
+        assert!(open_ch == '\'' || open_ch == '"');
+
         let mut out = String::new();
 
         loop
@@ -269,7 +272,7 @@ impl Input
 
             let ch = self.eat_ch();
 
-            if ch == '\"' {
+            if ch == open_ch {
                 break;
             }
 
@@ -399,8 +402,7 @@ fn parse_atom(vm: &mut VM, input: &mut Input, fun: &mut Function, scope: &mut Sc
     }
 
     // String literal
-    if ch == '\"' {
-        input.eat_ch();
+    if ch == '\"' || ch == '\'' {
         let str_val = input.parse_str()?;
         let gc_val = vm.into_gc_heap(str_val);
         fun.insns.push(Insn::Push { val: gc_val });
@@ -882,7 +884,7 @@ mod tests
     {
         let mut input = Input::new(" \"foobar\"", "input");
         input.eat_ws();
-        assert!(input.match_token("\""));
+        assert!(input.peek_ch() == '\"');
         assert_eq!(input.parse_str().unwrap(), "foobar");
         input.eat_ws();
         assert!(input.eof());
@@ -927,6 +929,7 @@ mod tests
     fn stmts()
     {
         parse_ok("let x = 3;");
+        parse_ok("let str = 'foo';");
         parse_ok("let x = 3; let y = 5;");
         parse_ok("{ let x = 3; x; } let y = 4;");
 
