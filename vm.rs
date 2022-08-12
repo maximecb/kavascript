@@ -537,9 +537,9 @@ mod tests
     fn eval_src(src: &str) -> Value
     {
         dbg!(src);
-        let mut input = Input::new(src, "test_src");
-        let unit_fn = parse_unit(&mut input).unwrap();
         let mut vm = VM::new();
+        let mut input = Input::new(src, "test_src");
+        let unit_fn = parse_unit(&mut vm, &mut input).unwrap();
         return vm.eval(&unit_fn);
     }
 
@@ -636,5 +636,11 @@ mod tests
         vm.stack_pop();
         vm.gc_collect();
         assert!(vm.gc_objects.len() == 0);
+    }
+
+    #[test]
+    fn test_examples()
+    {
+        // TODO
     }
 }

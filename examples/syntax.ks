@@ -23,3 +23,5 @@ while (i != 10) {
 // There are if and else statements
 if (0 < 10)
     println("true");
+else
+    println("false");

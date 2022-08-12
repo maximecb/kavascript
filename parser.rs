@@ -386,7 +386,7 @@ impl Scope
 }
 
 /// Parse an atomic expression
-fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Result<(), ParseError>
+fn parse_atom(vm: &mut VM, input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Result<(), ParseError>
 {
     input.eat_ws();
     let ch = input.peek_ch();
@@ -413,7 +413,7 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
     // Parenthesized expression
     if ch == '(' {
         input.eat_ch();
-        parse_expr(input, fun, scope)?;
+        parse_expr(vm, input, fun, scope)?;
         input.expect_token(")")?;
         return Ok(());
     }
@@ -421,7 +421,7 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
     // Unary logical not expression
     if ch == '!' {
         input.eat_ch();
-        parse_atom(input, fun, scope)?;
+        parse_atom(vm, input, fun, scope)?;
         fun.insns.push(Insn::Not);
         return Ok(());
     }
@@ -429,7 +429,7 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
     // Unary negation expression
     if ch == '-' {
         input.eat_ch();
-        parse_atom(input, fun, scope)?;
+        parse_atom(vm, input, fun, scope)?;
         fun.insns.push(Insn::Neg);
         return Ok(());
     }
@@ -462,7 +462,7 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         }
 
         // Parse the function body
-        parse_stmt(input, &mut new_fun, &mut scope)?;
+        parse_stmt(vm, input, &mut new_fun, &mut scope)?;
 
         // TODO: need to GC allocate fun
         // TODO: need to push stmt on stack, Insn::Push
@@ -494,7 +494,7 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         // If this is actually an assignment
         if input.match_token("=") {
             // Parse the expression to assign
-            parse_expr(input, fun, scope)?;
+            parse_expr(vm, input, fun, scope)?;
 
             fun.insns.push(Insn::Dup);
             fun.insns.push(Insn::SetLocal{ idx: local_idx.unwrap() });
@@ -511,7 +511,7 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
 }
 
 /// Parse a function call expression
-fn parse_call_expr(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Result<(), ParseError>
+fn parse_call_expr(vm: &mut VM, input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Result<(), ParseError>
 {
     // Note that the callee expression has already been parsed
     // when parse_call_expr is called
@@ -530,7 +530,7 @@ fn parse_call_expr(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> 
         }
 
         // Parse one argument
-        parse_expr(input, fun, scope)?;
+        parse_expr(vm, input, fun, scope)?;
 
         // Increment the argument count
         argc += 1;
@@ -596,13 +596,13 @@ fn emit_op(op: &str, fun: &mut Function)
 /// Parse a complex expression
 /// This uses the shunting yard algorithm to parse infix expressions:
 /// https://en.wikipedia.org/wiki/Shunting_yard_algorithm
-fn parse_expr(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Result<(), ParseError>
+fn parse_expr(vm: &mut VM, input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Result<(), ParseError>
 {
     // Operator stack
     let mut op_stack: Vec<OpInfo> = Vec::default();
 
     // Parse the first atomic expression
-    parse_atom(input, fun, scope)?;
+    parse_atom(vm, input, fun, scope)?;
 
     loop
     {
@@ -612,7 +612,7 @@ fn parse_expr(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
 
         // If this is a function call
         if input.match_token("(") {
-            parse_call_expr(input, fun, scope)?;
+            parse_call_expr(vm, input, fun, scope)?;
             continue;
         }
 
@@ -643,7 +643,7 @@ fn parse_expr(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         op_stack.push(new_op);
 
         // There must be another expression following
-        parse_atom(input, fun, scope)?;
+        parse_atom(vm, input, fun, scope)?;
     }
 
     // Emit all operators remaining on the operator stack
@@ -657,12 +657,12 @@ fn parse_expr(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
 }
 
 /// Parse a statement
-fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Result<(), ParseError>
+fn parse_stmt(vm: &mut VM, input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Result<(), ParseError>
 {
     input.eat_ws();
 
     if input.match_keyword("return") {
-        parse_expr(input, fun, scope)?;
+        parse_expr(vm, input, fun, scope)?;
         fun.insns.push(Insn::Return);
         input.expect_token(";")?;
         return Ok(());
@@ -673,7 +673,7 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         input.eat_ws();
         let ident = input.parse_ident()?;
         input.expect_token("=")?;
-        parse_expr(input, fun, scope)?;
+        parse_expr(vm, input, fun, scope)?;
         input.expect_token(";")?;
 
         // Check if there is a runtime function with this name
@@ -699,7 +699,7 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
     if input.match_keyword("if") {
         // Parse the test expression
         input.expect_token("(")?;
-        parse_expr(input, fun, scope)?;
+        parse_expr(vm, input, fun, scope)?;
         input.expect_token(")")?;
 
         // If the test evaluates to false, jump past the true statement
@@ -707,7 +707,7 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         fun.insns.push(Insn::IfFalse { offset: 0 });
 
         // Parse the true statement
-        parse_stmt(input, fun, scope)?;
+        parse_stmt(vm, input, fun, scope)?;
 
         // If there is an else statement
         if input.match_keyword("else") {
@@ -722,7 +722,7 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
 
             // Parse the false statement
             let false_stmt_idx = fun.insns.len();
-            parse_stmt(input, fun, scope)?;
+            parse_stmt(vm, input, fun, scope)?;
 
             // Patch the true jump
             let end_idx = fun.insns.len() as isize;
@@ -745,7 +745,7 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         // Parse the test expression
         input.expect_token("(")?;
         let test_idx = fun.insns.len() as isize;
-        parse_expr(input, fun, scope)?;
+        parse_expr(vm, input, fun, scope)?;
         input.expect_token(")")?;
 
         // If the test evaluates to false, jump past the loop body
@@ -753,7 +753,7 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         fun.insns.push(Insn::IfFalse { offset: 0 });
 
         // Parse the loop body
-        parse_stmt(input, fun, scope)?;
+        parse_stmt(vm, input, fun, scope)?;
 
         // Jump back to the loop test
         let jump_idx = fun.insns.len() as isize;
@@ -767,7 +767,7 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
 
     // Assert statement
     if input.match_keyword("assert") {
-        parse_expr(input, fun, scope)?;
+        parse_expr(vm, input, fun, scope)?;
         input.expect_token(";")?;
 
         // If the expression is true, don't panic
@@ -794,26 +794,20 @@ fn parse_stmt(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
                 break;
             }
 
-            parse_stmt(input, fun, &mut scope)?;
+            parse_stmt(vm, input, fun, &mut scope)?;
         }
 
         return Ok(());
     }
 
     // Try to parse this as an expression statement
-    parse_expr(input, fun, scope)?;
+    parse_expr(vm, input, fun, scope)?;
     fun.insns.push(Insn::Pop);
     input.expect_token(";")
 }
 
-/// Parse a function definition
-fn parse_fun(input: &mut Input) -> Result<Function, ParseError>
-{
-    todo!();
-}
-
 /// Parse a single unit of source code (e.g. one source file)
-pub fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
+pub fn parse_unit(vm: &mut VM, input: &mut Input) -> Result<Function, ParseError>
 {
     let mut unit_fun = Function::new(&input.src_name);
     let mut scope = Scope::new(&mut unit_fun);
@@ -826,7 +820,7 @@ pub fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
             break;
         }
 
-        parse_stmt(input, &mut unit_fun, &mut scope)?;
+        parse_stmt(vm, input, &mut unit_fun, &mut scope)?;
 
         // TODO: detect function keyword
     }
@@ -841,20 +835,20 @@ pub fn parse_unit(input: &mut Input) -> Result<Function, ParseError>
     Ok(unit_fun)
 }
 
-pub fn parse_str(src: &str) -> Function
+pub fn parse_str(vm: &mut VM, src: &str) -> Function
 {
     let mut input = Input::new(&src, "src");
-    parse_unit(&mut input).unwrap()
+    parse_unit(vm, &mut input).unwrap()
 }
 
-pub fn parse_file(file_name: &str) -> Function
+pub fn parse_file(vm: &mut VM, file_name: &str) -> Function
 {
     let data = fs::read_to_string(file_name)
         .expect(&format!("could not read input file {}", file_name));
 
     let mut input = Input::new(&data, file_name);
 
-    parse_unit(&mut input).unwrap()
+    parse_unit(vm, &mut input).unwrap()
 }
 
 #[cfg(test)]
@@ -862,10 +856,18 @@ mod tests
 {
     use super::*;
 
+    fn parse_ok(src: &str)
+    {
+        let mut vm = VM::new();
+        let mut input = Input::new(&src, "src");
+        assert!(parse_unit(&mut vm, &mut input).is_ok());
+    }
+
     fn parse_fails(src: &str)
     {
+        let mut vm = VM::new();
         let mut input = Input::new(&src, "src");
-        assert!(parse_unit(&mut input).is_err());
+        assert!(parse_unit(&mut vm, &mut input).is_err());
     }
 
     #[test]
@@ -905,23 +907,23 @@ mod tests
     #[test]
     fn simple_unit()
     {
-        parse_str("");
-        parse_str(" ");
-        parse_str("1;");
-        parse_str("1; ");
-        parse_str(" \"foobar\";");
-        parse_str("1_000_000;");
+        parse_ok("");
+        parse_ok(" ");
+        parse_ok("1;");
+        parse_ok("1; ");
+        parse_ok(" \"foobar\";");
+        parse_ok("1_000_000;");
     }
 
     #[test]
     fn infix_exprs()
     {
         // Should parse
-        parse_str("1 + 2;");
-        parse_str("1 + 2 * 3;");
-        parse_str("1 + 2 + 3;");
-        parse_str("1 + 2 + 3 + 4;");
-        parse_str("(1) + 2 + 3 * 4;");
+        parse_ok("1 + 2;");
+        parse_ok("1 + 2 * 3;");
+        parse_ok("1 + 2 + 3;");
+        parse_ok("1 + 2 + 3 + 4;");
+        parse_ok("(1) + 2 + 3 * 4;");
 
         // Should not parse
         parse_fails("1 + 2 +;");
@@ -930,30 +932,30 @@ mod tests
     #[test]
     fn stmts()
     {
-        parse_str("let x = 3;");
-        parse_str("let x = 3; let y = 5;");
-        parse_str("{ let x = 3; x; } let y = 4;");
+        parse_ok("let x = 3;");
+        parse_ok("let x = 3; let y = 5;");
+        parse_ok("{ let x = 3; x; } let y = 4;");
 
-        parse_str("assert 1;");
-        parse_str("let x = 3;");
-        parse_str("let x = 3; return x;");
+        parse_ok("assert 1;");
+        parse_ok("let x = 3;");
+        parse_ok("let x = 3; return x;");
         parse_fails("letx=3;");
         parse_fails("let x = 3; returnx;");
         parse_fails("assert1;");
 
-        parse_str("let x = 3; if (!x) x = 1;");
+        parse_ok("let x = 3; if (!x) x = 1;");
     }
 
     #[test]
     fn call_expr()
     {
-        parse_str("1();");
-        parse_str("1(0);");
-        parse_str("1(0,);");
-        parse_str("1(0,1);");
-        parse_str("1( 0 , 1 , 2 );");
-        parse_str("0 + 1(0,1,2) + 3;");
-        parse_str("let x = 1(0,1,2);");
+        parse_ok("1();");
+        parse_ok("1(0);");
+        parse_ok("1(0,);");
+        parse_ok("1(0,1);");
+        parse_ok("1( 0 , 1 , 2 );");
+        parse_ok("0 + 1(0,1,2) + 3;");
+        parse_ok("let x = 1(0,1,2);");
     }
 
     #[test]
@@ -962,19 +964,19 @@ mod tests
         parse_fails("let println = 3;");
         parse_fails("println = 3;");
 
-        parse_str("println(1);");
-        parse_str("println(1, 2);");
+        parse_ok("println(1);");
+        parse_ok("println(1, 2);");
     }
 
 
     #[test]
     fn fun_expr()
     {
-        parse_str("let f = fun() {};");
-        parse_str("let f = fun(x) {};");
-        parse_str("let f = fun(x,) {};");
-        parse_str("let f = fun(x,y) {};");
-        parse_str("let f = fun(x,y) { return 1; };");
+        parse_ok("let f = fun() {};");
+        parse_ok("let f = fun(x) {};");
+        parse_ok("let f = fun(x,) {};");
+        parse_ok("let f = fun(x,y) {};");
+        parse_ok("let f = fun(x,y) { return 1; };");
         parse_fails("let f = fun(x,y,1) {};");
     }
 }
