@@ -22,7 +22,7 @@ fn main()
     // If an input file was specified
     if args.len() == 2 {
         let mut vm = VM::new();
-        let unit_fn = parse_file(&mut vm, &args[1]);
+        let unit_fn = parse_file(&mut vm, &args[1]).unwrap();
         vm.eval(&unit_fn);
     }
 }

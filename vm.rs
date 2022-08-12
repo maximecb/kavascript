@@ -559,6 +559,14 @@ mod tests
         return vm.eval(&unit_fn);
     }
 
+    fn eval_file(file_name: & str) -> Value
+    {
+        dbg!(file_name);
+        let mut vm = VM::new();
+        let unit_fn = parse_file(&mut vm, file_name).unwrap();
+        return vm.eval(&unit_fn);
+    }
+
     #[test]
     fn test_eval()
     {
@@ -663,6 +671,8 @@ mod tests
     #[test]
     fn test_examples()
     {
-        // TODO
+        // Make sure that we can run the examples successfully
+        eval_file("examples/syntax.ks");
+        eval_file("examples/fizzbuzz.ks");
     }
 }

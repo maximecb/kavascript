@@ -832,20 +832,20 @@ pub fn parse_unit(vm: &mut VM, input: &mut Input) -> Result<Function, ParseError
     Ok(unit_fun)
 }
 
-pub fn parse_str(vm: &mut VM, src: &str) -> Function
+pub fn parse_str(vm: &mut VM, src: &str) -> Result<Function, ParseError>
 {
     let mut input = Input::new(&src, "src");
-    parse_unit(vm, &mut input).unwrap()
+    parse_unit(vm, &mut input)
 }
 
-pub fn parse_file(vm: &mut VM, file_name: &str) -> Function
+pub fn parse_file(vm: &mut VM, file_name: &str) -> Result<Function, ParseError>
 {
     let data = fs::read_to_string(file_name)
         .expect(&format!("could not read input file {}", file_name));
 
     let mut input = Input::new(&data, file_name);
 
-    parse_unit(vm, &mut input).unwrap()
+    parse_unit(vm, &mut input)
 }
 
 #[cfg(test)]
