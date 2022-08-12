@@ -418,11 +418,19 @@ fn parse_atom(input: &mut Input, fun: &mut Function, scope: &mut Scope) -> Resul
         return Ok(());
     }
 
-    // Unary negation expression
+    // Unary logical not expression
     if ch == '!' {
         input.eat_ch();
         parse_expr(input, fun, scope)?;
         fun.insns.push(Insn::Not);
+        return Ok(());
+    }
+
+    // Unary negation expression
+    if ch == '-' {
+        input.eat_ch();
+        parse_expr(input, fun, scope)?;
+        fun.insns.push(Insn::Neg);
         return Ok(());
     }
 
@@ -549,8 +557,9 @@ struct OpInfo
 
 /// Binary operators and their precedence level
 /// https://en.cppreference.com/w/c/language/operator_precedence
-const BIN_OPS: [OpInfo; 6] = [
+const BIN_OPS: [OpInfo; 7] = [
     OpInfo { op: "*", prec: 2 },
+    OpInfo { op: "%", prec: 2 },
     OpInfo { op: "+", prec: 1 },
     OpInfo { op: "-", prec: 1 },
     OpInfo { op: "==", prec: 0 },
@@ -574,6 +583,7 @@ fn emit_op(op: &str, fun: &mut Function)
 {
     match op {
         "*" => fun.insns.push(Insn::Mul),
+        "%" => fun.insns.push(Insn::Mod),
         "+" => fun.insns.push(Insn::Add),
         "-" => fun.insns.push(Insn::Sub),
         "==" => fun.insns.push(Insn::Eq),

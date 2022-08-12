@@ -33,6 +33,7 @@ pub enum Insn
     Add,
     Sub,
     Mul,
+    Mod,
 
     // Comparisons
     Eq,
@@ -42,7 +43,10 @@ pub enum Insn
     Gt,
     Ge,
 
-    // Unary negation (logical not)
+    // Unary negation
+    Neg,
+
+    // Unary logical not
     Not,
 
     // Branch instructions
@@ -80,12 +84,6 @@ impl Function
         }
     }
 }
-
-
-
-
-
-
 
 /// Hold an object to be placed in the GC heap and mark bits
 #[repr(C)]
@@ -406,6 +404,15 @@ impl VM
                     let v0 = self.stack_pop();
                     match (v0, v1) {
                         (Int64(v0), Int64(v1)) => self.stack.push(Int64(v0 * v1)),
+                        _ => panic!()
+                    }
+                }
+
+                Mod => {
+                    let v1 = self.stack_pop();
+                    let v0 = self.stack_pop();
+                    match (v0, v1) {
+                        (Int64(v0), Int64(v1)) => self.stack.push(Int64(v0 % v1)),
                         _ => panic!()
                     }
                 }
