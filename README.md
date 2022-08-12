@@ -1,4 +1,4 @@
-# Plush
+# KavaScipt
 
 Simple, dynamically-typed toy programming language for fun/didactic/tutorial purposes.
 Implemented in Rust. The codebase is intentionally kept small, easy to read and is well-commented.
@@ -31,7 +31,7 @@ Limitations:
 Clone this repository:
 
 ```
-git clone git@github.com:maximecb/plush.git
+git clone git@github.com:maximecb/kavascript.git
 ```
 
 Build and run the project:
@@ -40,10 +40,10 @@ Build and run the project:
 # Run tests
 cargo test
 
-# Compiles project to ./target/debug/plush
+# Compiles project to ./target/debug/kavascript
 carbo build
 
-# For best performance, builds to ./target/release/plush
+# For best performance, builds to ./target/release/kavascript
 carbo build --release
 
 # Run an example script
