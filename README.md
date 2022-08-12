@@ -40,10 +40,10 @@ Build and run the project:
 # Run tests
 cargo test
 
-# Compiles project to ./target/debug/kavascript
+# Compiles project to ./target/debug/ksvm
 carbo build
 
-# For best performance, builds to ./target/release/kavascript
+# For best performance, builds to ./target/release/ksvm
 carbo build --release
 
 # Run an example script
