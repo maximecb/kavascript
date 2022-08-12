@@ -322,6 +322,13 @@ impl VM
         self.stack.push(val);
     }
 
+    /// Push a Rust string onto the value stack
+    pub fn push_str(&mut self, val: String)
+    {
+        let val = self.into_gc_heap(val);
+        self.stack.push(val);
+    }
+
     /// Push a Rust boolean onto the value stack
     pub fn push_bool(&mut self, val: bool)
     {
@@ -391,6 +398,12 @@ impl VM
                     let v0 = self.stack_pop();
                     match (v0, v1) {
                         (Int64(v0), Int64(v1)) => self.stack.push(Int64(v0 + v1)),
+                        (Str(s0), Str(s1)) => unsafe {
+                            let mut out_str = String::from("");
+                            out_str.push_str(&*s0);
+                            out_str.push_str(&*s1);
+                            self.push_str(out_str);
+                        }
                         _ => panic!()
                     }
                 }
@@ -435,6 +448,9 @@ impl VM
                     let v0 = self.stack_pop();
                     match (v0, v1) {
                         (Int64(v0), Int64(v1)) => self.push_bool(v0 == v1),
+                        (Str(s0), Str(s1)) => unsafe {
+                            self.push_bool(&*s0 == &*s1);
+                        }
                         _ => panic!()
                     };
                 }
@@ -636,6 +652,12 @@ mod tests
         vm.stack_pop();
         vm.gc_collect();
         assert!(vm.gc_objects.len() == 0);
+    }
+
+    #[test]
+    fn test_strings()
+    {
+        assert_eq!(eval_src("return \"foo\" + \"bar\" == \"foobar\";"), Int64(1));
     }
 
     #[test]
