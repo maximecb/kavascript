@@ -614,7 +614,7 @@ mod tests
     fn test_gc()
     {
         let mut vm = VM::new();
-        let str_val = vm.into_gc_heap( String::from("hello") );
+        let str_val = vm.into_gc_heap(String::from("hello"));
 
         vm.stack_push(str_val);
         vm.gc_collect();
