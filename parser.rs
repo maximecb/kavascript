@@ -402,11 +402,8 @@ fn parse_atom(vm: &mut VM, input: &mut Input, fun: &mut Function, scope: &mut Sc
     if ch == '\"' {
         input.eat_ch();
         let str_val = input.parse_str()?;
-
-        // FIXME
-        //fun.insns.push(Insn::Push { val: Value::Str(str_val) });
-        fun.insns.push(Insn::Push { val: Value::Nil });
-
+        let gc_val = vm.into_gc_heap(str_val);
+        fun.insns.push(Insn::Push { val: gc_val });
         return Ok(());
     }
 
@@ -630,8 +627,6 @@ fn parse_expr(vm: &mut VM, input: &mut Input, fun: &mut Function, scope: &mut Sc
             let top_op = &op_stack[op_stack.len() - 1];
 
             if top_op.prec > new_op.prec {
-                println!("emit {}", top_op.op);
-
                 emit_op(top_op.op, fun);
                 op_stack.pop();
             }
@@ -899,7 +894,6 @@ mod tests
         let mut input = Input::new("1 // test\n  2", "input");
         assert_eq!(input.parse_int().unwrap(), 1);
         input.eat_ws();
-        dbg!(input.pos);
         assert_eq!(input.parse_int().unwrap(), 2);
         assert!(input.eof());
     }
