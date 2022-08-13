@@ -567,7 +567,7 @@ struct OpInfo
 
 /// Binary operators and their precedence level
 /// https://en.cppreference.com/w/c/language/operator_precedence
-const BIN_OPS: [OpInfo; 7] = [
+const BIN_OPS: [OpInfo; 8] = [
     OpInfo { op: "*", prec: 2 },
     OpInfo { op: "%", prec: 2 },
     OpInfo { op: "+", prec: 1 },
@@ -575,6 +575,7 @@ const BIN_OPS: [OpInfo; 7] = [
     OpInfo { op: "==", prec: 0 },
     OpInfo { op: "!=", prec: 0 },
     OpInfo { op: "<", prec: 0 },
+    OpInfo { op: ">", prec: 0 },
 ];
 
 /// Try to match a binary operator in the input
@@ -599,6 +600,7 @@ fn emit_op(op: &str, fun: &mut Function)
         "==" => fun.insns.push(Insn::Eq),
         "!=" => fun.insns.push(Insn::Ne),
         "<" => fun.insns.push(Insn::Lt),
+        ">" => fun.insns.push(Insn::Gt),
         _ => panic!()
     }
 }

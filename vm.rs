@@ -477,6 +477,15 @@ impl VM
                     };
                 }
 
+                Gt => {
+                    let v1 = self.stack_pop();
+                    let v0 = self.stack_pop();
+                    match (v0, v1) {
+                        (Int64(v0), Int64(v1)) => self.push_bool(v0 > v1),
+                        _ => panic!()
+                    };
+                }
+
                 Not => {
                     let v0 = self.stack_pop();
                     match v0 {
@@ -678,5 +687,6 @@ mod tests
         // Make sure that we can run the examples successfully
         eval_file("examples/syntax.ks");
         eval_file("examples/fizzbuzz.ks");
+        eval_file("examples/99bottles.ks");
     }
 }
