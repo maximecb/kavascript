@@ -65,6 +65,9 @@ pub struct Function
     /// Parameter list
     pub params: Vec<String>,
 
+    /// Unbound variable list
+    pub unbound_vars: Vec<String>,
+
     /// Number of local variables
     pub num_locals: usize,
 
@@ -79,6 +82,7 @@ impl Function
         Self {
             name: name.to_string(),
             params: Vec::default(),
+            unbound_vars: Vec::default(),
             num_locals: 0,
             insns: Vec::default(),
         }
